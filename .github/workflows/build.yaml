@@ -364,6 +364,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: smart
 
       - name: Download
         uses: actions/download-artifact@v4
@@ -421,6 +422,12 @@ jobs:
         run: |
           cd ./dist
           sha256sum ./* > SHA256SUMS
+
+      - name: Delete existing release
+        if: ${{ env.IS_STABLE == 'true' }}
+        run: gh release delete "${{ github.ref_name }}" --yes || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release
         if: ${{ env.IS_STABLE == 'true' }}

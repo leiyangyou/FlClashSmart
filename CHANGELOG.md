@@ -63,6 +63,8 @@
 - Optimize backup and restore
 - Optimize more details
 
+- Add smart core support
+
 ## v0.8.91 (2025-12-12)
 
 - Fix windows some issues

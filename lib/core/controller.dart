@@ -60,7 +60,7 @@ class CoreController {
 
   static Future<void> initGeo() async {
     final homePath = await appPath.homeDirPath;
-    const geoFileNameList = [MMDB, GEOIP, GEOSITE, ASN];
+    const geoFileNameList = [MMDB, GEOIP, GEOSITE, ASN, MODEL];
     try {
       for (final geoFileName in geoFileNameList) {
         final geoFile = File(join(homePath, geoFileName));

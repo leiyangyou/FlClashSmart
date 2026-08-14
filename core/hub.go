@@ -362,6 +362,7 @@ var geoResourceUpdaters = map[string]func() error{
 	"ASN":     updater.UpdateASN,
 	"GEOIP":   updater.UpdateGeoIp,
 	"GEOSITE": updater.UpdateGeoSite,
+	"MODEL":   updater.UpdateLgbmModelDatabase,
 }
 
 const (

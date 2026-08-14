@@ -38,6 +38,10 @@
 - Optimize focus control
 - Adjust android process
 
+- Update core
+
+- Update bundled model to latest 30-feature
+
 ## v0.8.94 (2026-07-11)
 
 - Fix macos performance issue

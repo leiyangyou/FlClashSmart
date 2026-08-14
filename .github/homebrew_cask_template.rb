@@ -30,12 +30,12 @@ cask "flclash" do
         writable_base:  :appdir
   end
 
-  uninstall quit: "com.follow.clash"
+  uninstall quit: "com.flsmart.clash"
 
   zap trash: [
-    "~/Library/Application Support/com.follow.clash",
-    "~/Library/Caches/com.follow.clash",
-    "~/Library/Preferences/com.follow.clash.plist",
-    "~/Library/Saved Application State/com.follow.clash.savedState",
+    "~/Library/Application Support/com.flsmart.clash",
+    "~/Library/Caches/com.flsmart.clash",
+    "~/Library/Preferences/com.flsmart.clash.plist",
+    "~/Library/Saved Application State/com.flsmart.clash.savedState",
   ]
 end

@@ -237,6 +237,9 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
   injectUnconfinedProviders('rule-providers', data.injectedRuleProviders);
   rawConfig['profile']['store-selected'] = false;
   rawConfig['geox-url'] = realPatchConfig.geoXUrl.raw;
+  rawConfig['lgbm-url'] =
+      realPatchConfig.geoXUrl[GeoResource.MODEL] ??
+      defaultGeoXUrl[GeoResource.MODEL];
   rawConfig['global-ua'] = realPatchConfig.globalUa ?? defaultUA;
   if (rawConfig['hosts'] == null) {
     rawConfig['hosts'] = {};

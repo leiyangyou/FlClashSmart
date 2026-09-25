@@ -2,37 +2,41 @@
   "schemaVersion": 2,
   "versions": [
     {
-      "version": "0.8.98",
-      "tag": "v0.8.98",
-      "date": "2026-09-14",
+      "version": "0.8.100",
+      "tag": "v0.8.100",
+      "date": "2026-09-26",
       "prerelease": false,
       "groups": [
         {
-          "type": "fix",
+          "type": "feat",
           "entries": [
             {
-              "id": "c5bf5bd",
-              "scope": "resources",
-              "text": "Refresh the geo file size and time after an update finishes"
+              "id": "64bd13d",
+              "scope": "overwrite",
+              "text": "Keep smart group options through the editors"
             },
             {
-              "id": "60f371a",
-              "scope": "core",
-              "text": "Keep the core running while Windows sleeps with the app suspended"
+              "id": "d13f1fc",
+              "scope": "groups",
+              "text": "Support smart proxy groups"
             }
           ]
         }
       ]
     },
     {
-      "version": "0.8.97",
-      "tag": "v0.8.97",
-      "date": "2026-09-10",
+      "version": "0.8.99",
+      "tag": "v0.8.99",
+      "date": "2026-09-26",
       "prerelease": false,
       "groups": [
         {
           "type": "feat",
           "entries": [
+            {
+              "id": "133802b",
+              "text": "Smart Core integration"
+            },
             {
               "id": "26cfbaf",
               "scope": "ui",
@@ -62,6 +66,21 @@
               "id": "c6eaa0a",
               "scope": "core",
               "text": "Rework the core IPC and process lifecycle"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "c5bf5bd",
+              "scope": "resources",
+              "text": "Refresh the geo file size and time after an update finishes"
+            },
+            {
+              "id": "60f371a",
+              "scope": "core",
+              "text": "Keep the core running while Windows sleeps with the app suspended"
             }
           ]
         }

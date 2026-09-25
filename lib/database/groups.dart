@@ -46,10 +46,19 @@ class ProxyGroups extends Table {
 
   TextColumn get expectedStatus => text().nullable()();
 
+  TextColumn get policyPriority => text().nullable()();
+
+  BoolColumn get useLightGBM => boolean().nullable()();
+
+  BoolColumn get collectData => boolean().nullable()();
+
+  RealColumn get sampleRate => real().nullable()();
+
+  BoolColumn get preferASN => boolean().nullable()();
+
   IntColumn get tolerance => integer().nullable()();
 
   TextColumn get strategy => text().nullable()();
-
   BoolColumn get includeAll => boolean().nullable()();
 
   BoolColumn get includeAllProxies => boolean().nullable()();
@@ -208,6 +217,11 @@ extension RawProxyGroupExt on RawProxyGroup {
       excludeFilter: excludeFilter,
       excludeType: excludeType,
       expectedStatus: expectedStatus,
+      policyPriority: policyPriority,
+      useLightGBM: useLightGBM,
+      collectData: collectData,
+      sampleRate: sampleRate,
+      preferASN: preferASN,
       tolerance: tolerance,
       strategy: LoadBalanceStrategy.parse(strategy),
       includeAll: includeAll,
@@ -239,6 +253,11 @@ extension ProxyGroupsCompanionExt on ProxyGroup {
       excludeFilter: Value(excludeFilter),
       excludeType: Value(excludeType),
       expectedStatus: Value(expectedStatus),
+      policyPriority: Value(policyPriority),
+      useLightGBM: Value(useLightGBM),
+      collectData: Value(collectData),
+      sampleRate: Value(sampleRate),
+      preferASN: Value(preferASN),
       tolerance: Value(tolerance),
       strategy: Value(strategy?.value),
       includeAll: Value(includeAll),

@@ -2251,6 +2251,70 @@ class $ProxyGroupsTable extends ProxyGroups
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _policyPriorityMeta = const VerificationMeta(
+    'policyPriority',
+  );
+  @override
+  late final GeneratedColumn<String> policyPriority = GeneratedColumn<String>(
+    'policy_priority',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _useLightGBMMeta = const VerificationMeta(
+    'useLightGBM',
+  );
+  @override
+  late final GeneratedColumn<bool> useLightGBM = GeneratedColumn<bool>(
+    'use_light_g_b_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("use_light_g_b_m" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _collectDataMeta = const VerificationMeta(
+    'collectData',
+  );
+  @override
+  late final GeneratedColumn<bool> collectData = GeneratedColumn<bool>(
+    'collect_data',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("collect_data" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _sampleRateMeta = const VerificationMeta(
+    'sampleRate',
+  );
+  @override
+  late final GeneratedColumn<double> sampleRate = GeneratedColumn<double>(
+    'sample_rate',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _preferASNMeta = const VerificationMeta(
+    'preferASN',
+  );
+  @override
+  late final GeneratedColumn<bool> preferASN = GeneratedColumn<bool>(
+    'prefer_a_s_n',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("prefer_a_s_n" IN (0, 1))',
+    ),
+  );
   static const VerificationMeta _toleranceMeta = const VerificationMeta(
     'tolerance',
   );
@@ -2362,6 +2426,11 @@ class $ProxyGroupsTable extends ProxyGroups
     excludeFilter,
     excludeType,
     expectedStatus,
+    policyPriority,
+    useLightGBM,
+    collectData,
+    sampleRate,
+    preferASN,
     tolerance,
     strategy,
     includeAll,
@@ -2481,6 +2550,45 @@ class $ProxyGroupsTable extends ProxyGroups
           data['expected_status']!,
           _expectedStatusMeta,
         ),
+      );
+    }
+    if (data.containsKey('policy_priority')) {
+      context.handle(
+        _policyPriorityMeta,
+        policyPriority.isAcceptableOrUnknown(
+          data['policy_priority']!,
+          _policyPriorityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('use_light_g_b_m')) {
+      context.handle(
+        _useLightGBMMeta,
+        useLightGBM.isAcceptableOrUnknown(
+          data['use_light_g_b_m']!,
+          _useLightGBMMeta,
+        ),
+      );
+    }
+    if (data.containsKey('collect_data')) {
+      context.handle(
+        _collectDataMeta,
+        collectData.isAcceptableOrUnknown(
+          data['collect_data']!,
+          _collectDataMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sample_rate')) {
+      context.handle(
+        _sampleRateMeta,
+        sampleRate.isAcceptableOrUnknown(data['sample_rate']!, _sampleRateMeta),
+      );
+    }
+    if (data.containsKey('prefer_a_s_n')) {
+      context.handle(
+        _preferASNMeta,
+        preferASN.isAcceptableOrUnknown(data['prefer_a_s_n']!, _preferASNMeta),
       );
     }
     if (data.containsKey('tolerance')) {
@@ -2614,6 +2722,26 @@ class $ProxyGroupsTable extends ProxyGroups
         DriftSqlType.string,
         data['${effectivePrefix}expected_status'],
       ),
+      policyPriority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}policy_priority'],
+      ),
+      useLightGBM: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}use_light_g_b_m'],
+      ),
+      collectData: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}collect_data'],
+      ),
+      sampleRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sample_rate'],
+      ),
+      preferASN: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}prefer_a_s_n'],
+      ),
       tolerance: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}tolerance'],
@@ -2681,6 +2809,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
   final String? excludeFilter;
   final String? excludeType;
   final String? expectedStatus;
+  final String? policyPriority;
+  final bool? useLightGBM;
+  final bool? collectData;
+  final double? sampleRate;
+  final bool? preferASN;
   final int? tolerance;
   final String? strategy;
   final bool? includeAll;
@@ -2706,6 +2839,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     this.excludeFilter,
     this.excludeType,
     this.expectedStatus,
+    this.policyPriority,
+    this.useLightGBM,
+    this.collectData,
+    this.sampleRate,
+    this.preferASN,
     this.tolerance,
     this.strategy,
     this.includeAll,
@@ -2763,6 +2901,21 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     }
     if (!nullToAbsent || expectedStatus != null) {
       map['expected_status'] = Variable<String>(expectedStatus);
+    }
+    if (!nullToAbsent || policyPriority != null) {
+      map['policy_priority'] = Variable<String>(policyPriority);
+    }
+    if (!nullToAbsent || useLightGBM != null) {
+      map['use_light_g_b_m'] = Variable<bool>(useLightGBM);
+    }
+    if (!nullToAbsent || collectData != null) {
+      map['collect_data'] = Variable<bool>(collectData);
+    }
+    if (!nullToAbsent || sampleRate != null) {
+      map['sample_rate'] = Variable<double>(sampleRate);
+    }
+    if (!nullToAbsent || preferASN != null) {
+      map['prefer_a_s_n'] = Variable<bool>(preferASN);
     }
     if (!nullToAbsent || tolerance != null) {
       map['tolerance'] = Variable<int>(tolerance);
@@ -2829,6 +2982,21 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       expectedStatus: expectedStatus == null && nullToAbsent
           ? const Value.absent()
           : Value(expectedStatus),
+      policyPriority: policyPriority == null && nullToAbsent
+          ? const Value.absent()
+          : Value(policyPriority),
+      useLightGBM: useLightGBM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(useLightGBM),
+      collectData: collectData == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectData),
+      sampleRate: sampleRate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sampleRate),
+      preferASN: preferASN == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preferASN),
       tolerance: tolerance == null && nullToAbsent
           ? const Value.absent()
           : Value(tolerance),
@@ -2876,6 +3044,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       excludeFilter: serializer.fromJson<String?>(json['excludeFilter']),
       excludeType: serializer.fromJson<String?>(json['excludeType']),
       expectedStatus: serializer.fromJson<String?>(json['expectedStatus']),
+      policyPriority: serializer.fromJson<String?>(json['policyPriority']),
+      useLightGBM: serializer.fromJson<bool?>(json['useLightGBM']),
+      collectData: serializer.fromJson<bool?>(json['collectData']),
+      sampleRate: serializer.fromJson<double?>(json['sampleRate']),
+      preferASN: serializer.fromJson<bool?>(json['preferASN']),
       tolerance: serializer.fromJson<int?>(json['tolerance']),
       strategy: serializer.fromJson<String?>(json['strategy']),
       includeAll: serializer.fromJson<bool?>(json['includeAll']),
@@ -2908,6 +3081,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       'excludeFilter': serializer.toJson<String?>(excludeFilter),
       'excludeType': serializer.toJson<String?>(excludeType),
       'expectedStatus': serializer.toJson<String?>(expectedStatus),
+      'policyPriority': serializer.toJson<String?>(policyPriority),
+      'useLightGBM': serializer.toJson<bool?>(useLightGBM),
+      'collectData': serializer.toJson<bool?>(collectData),
+      'sampleRate': serializer.toJson<double?>(sampleRate),
+      'preferASN': serializer.toJson<bool?>(preferASN),
       'tolerance': serializer.toJson<int?>(tolerance),
       'strategy': serializer.toJson<String?>(strategy),
       'includeAll': serializer.toJson<bool?>(includeAll),
@@ -2936,6 +3114,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     Value<String?> excludeFilter = const Value.absent(),
     Value<String?> excludeType = const Value.absent(),
     Value<String?> expectedStatus = const Value.absent(),
+    Value<String?> policyPriority = const Value.absent(),
+    Value<bool?> useLightGBM = const Value.absent(),
+    Value<bool?> collectData = const Value.absent(),
+    Value<double?> sampleRate = const Value.absent(),
+    Value<bool?> preferASN = const Value.absent(),
     Value<int?> tolerance = const Value.absent(),
     Value<String?> strategy = const Value.absent(),
     Value<bool?> includeAll = const Value.absent(),
@@ -2967,6 +3150,13 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     expectedStatus: expectedStatus.present
         ? expectedStatus.value
         : this.expectedStatus,
+    policyPriority: policyPriority.present
+        ? policyPriority.value
+        : this.policyPriority,
+    useLightGBM: useLightGBM.present ? useLightGBM.value : this.useLightGBM,
+    collectData: collectData.present ? collectData.value : this.collectData,
+    sampleRate: sampleRate.present ? sampleRate.value : this.sampleRate,
+    preferASN: preferASN.present ? preferASN.value : this.preferASN,
     tolerance: tolerance.present ? tolerance.value : this.tolerance,
     strategy: strategy.present ? strategy.value : this.strategy,
     includeAll: includeAll.present ? includeAll.value : this.includeAll,
@@ -3008,6 +3198,19 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       expectedStatus: data.expectedStatus.present
           ? data.expectedStatus.value
           : this.expectedStatus,
+      policyPriority: data.policyPriority.present
+          ? data.policyPriority.value
+          : this.policyPriority,
+      useLightGBM: data.useLightGBM.present
+          ? data.useLightGBM.value
+          : this.useLightGBM,
+      collectData: data.collectData.present
+          ? data.collectData.value
+          : this.collectData,
+      sampleRate: data.sampleRate.present
+          ? data.sampleRate.value
+          : this.sampleRate,
+      preferASN: data.preferASN.present ? data.preferASN.value : this.preferASN,
       tolerance: data.tolerance.present ? data.tolerance.value : this.tolerance,
       strategy: data.strategy.present ? data.strategy.value : this.strategy,
       includeAll: data.includeAll.present
@@ -3044,6 +3247,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
           ..write('excludeFilter: $excludeFilter, ')
           ..write('excludeType: $excludeType, ')
           ..write('expectedStatus: $expectedStatus, ')
+          ..write('policyPriority: $policyPriority, ')
+          ..write('useLightGBM: $useLightGBM, ')
+          ..write('collectData: $collectData, ')
+          ..write('sampleRate: $sampleRate, ')
+          ..write('preferASN: $preferASN, ')
           ..write('tolerance: $tolerance, ')
           ..write('strategy: $strategy, ')
           ..write('includeAll: $includeAll, ')
@@ -3074,6 +3282,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     excludeFilter,
     excludeType,
     expectedStatus,
+    policyPriority,
+    useLightGBM,
+    collectData,
+    sampleRate,
+    preferASN,
     tolerance,
     strategy,
     includeAll,
@@ -3103,6 +3316,11 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
           other.excludeFilter == this.excludeFilter &&
           other.excludeType == this.excludeType &&
           other.expectedStatus == this.expectedStatus &&
+          other.policyPriority == this.policyPriority &&
+          other.useLightGBM == this.useLightGBM &&
+          other.collectData == this.collectData &&
+          other.sampleRate == this.sampleRate &&
+          other.preferASN == this.preferASN &&
           other.tolerance == this.tolerance &&
           other.strategy == this.strategy &&
           other.includeAll == this.includeAll &&
@@ -3130,6 +3348,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
   final Value<String?> excludeFilter;
   final Value<String?> excludeType;
   final Value<String?> expectedStatus;
+  final Value<String?> policyPriority;
+  final Value<bool?> useLightGBM;
+  final Value<bool?> collectData;
+  final Value<double?> sampleRate;
+  final Value<bool?> preferASN;
   final Value<int?> tolerance;
   final Value<String?> strategy;
   final Value<bool?> includeAll;
@@ -3155,6 +3378,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     this.excludeFilter = const Value.absent(),
     this.excludeType = const Value.absent(),
     this.expectedStatus = const Value.absent(),
+    this.policyPriority = const Value.absent(),
+    this.useLightGBM = const Value.absent(),
+    this.collectData = const Value.absent(),
+    this.sampleRate = const Value.absent(),
+    this.preferASN = const Value.absent(),
     this.tolerance = const Value.absent(),
     this.strategy = const Value.absent(),
     this.includeAll = const Value.absent(),
@@ -3181,6 +3409,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     this.excludeFilter = const Value.absent(),
     this.excludeType = const Value.absent(),
     this.expectedStatus = const Value.absent(),
+    this.policyPriority = const Value.absent(),
+    this.useLightGBM = const Value.absent(),
+    this.collectData = const Value.absent(),
+    this.sampleRate = const Value.absent(),
+    this.preferASN = const Value.absent(),
     this.tolerance = const Value.absent(),
     this.strategy = const Value.absent(),
     this.includeAll = const Value.absent(),
@@ -3208,6 +3441,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     Expression<String>? excludeFilter,
     Expression<String>? excludeType,
     Expression<String>? expectedStatus,
+    Expression<String>? policyPriority,
+    Expression<bool>? useLightGBM,
+    Expression<bool>? collectData,
+    Expression<double>? sampleRate,
+    Expression<bool>? preferASN,
     Expression<int>? tolerance,
     Expression<String>? strategy,
     Expression<bool>? includeAll,
@@ -3234,6 +3472,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
       if (excludeFilter != null) 'exclude_filter': excludeFilter,
       if (excludeType != null) 'exclude_type': excludeType,
       if (expectedStatus != null) 'expected_status': expectedStatus,
+      if (policyPriority != null) 'policy_priority': policyPriority,
+      if (useLightGBM != null) 'use_light_g_b_m': useLightGBM,
+      if (collectData != null) 'collect_data': collectData,
+      if (sampleRate != null) 'sample_rate': sampleRate,
+      if (preferASN != null) 'prefer_a_s_n': preferASN,
       if (tolerance != null) 'tolerance': tolerance,
       if (strategy != null) 'strategy': strategy,
       if (includeAll != null) 'include_all': includeAll,
@@ -3263,6 +3506,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     Value<String?>? excludeFilter,
     Value<String?>? excludeType,
     Value<String?>? expectedStatus,
+    Value<String?>? policyPriority,
+    Value<bool?>? useLightGBM,
+    Value<bool?>? collectData,
+    Value<double?>? sampleRate,
+    Value<bool?>? preferASN,
     Value<int?>? tolerance,
     Value<String?>? strategy,
     Value<bool?>? includeAll,
@@ -3289,6 +3537,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
       excludeFilter: excludeFilter ?? this.excludeFilter,
       excludeType: excludeType ?? this.excludeType,
       expectedStatus: expectedStatus ?? this.expectedStatus,
+      policyPriority: policyPriority ?? this.policyPriority,
+      useLightGBM: useLightGBM ?? this.useLightGBM,
+      collectData: collectData ?? this.collectData,
+      sampleRate: sampleRate ?? this.sampleRate,
+      preferASN: preferASN ?? this.preferASN,
       tolerance: tolerance ?? this.tolerance,
       strategy: strategy ?? this.strategy,
       includeAll: includeAll ?? this.includeAll,
@@ -3355,6 +3608,21 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     if (expectedStatus.present) {
       map['expected_status'] = Variable<String>(expectedStatus.value);
     }
+    if (policyPriority.present) {
+      map['policy_priority'] = Variable<String>(policyPriority.value);
+    }
+    if (useLightGBM.present) {
+      map['use_light_g_b_m'] = Variable<bool>(useLightGBM.value);
+    }
+    if (collectData.present) {
+      map['collect_data'] = Variable<bool>(collectData.value);
+    }
+    if (sampleRate.present) {
+      map['sample_rate'] = Variable<double>(sampleRate.value);
+    }
+    if (preferASN.present) {
+      map['prefer_a_s_n'] = Variable<bool>(preferASN.value);
+    }
     if (tolerance.present) {
       map['tolerance'] = Variable<int>(tolerance.value);
     }
@@ -3401,6 +3669,11 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
           ..write('excludeFilter: $excludeFilter, ')
           ..write('excludeType: $excludeType, ')
           ..write('expectedStatus: $expectedStatus, ')
+          ..write('policyPriority: $policyPriority, ')
+          ..write('useLightGBM: $useLightGBM, ')
+          ..write('collectData: $collectData, ')
+          ..write('sampleRate: $sampleRate, ')
+          ..write('preferASN: $preferASN, ')
           ..write('tolerance: $tolerance, ')
           ..write('strategy: $strategy, ')
           ..write('includeAll: $includeAll, ')
@@ -6174,6 +6447,11 @@ typedef $$ProxyGroupsTableCreateCompanionBuilder =
       Value<String?> excludeFilter,
       Value<String?> excludeType,
       Value<String?> expectedStatus,
+      Value<String?> policyPriority,
+      Value<bool?> useLightGBM,
+      Value<bool?> collectData,
+      Value<double?> sampleRate,
+      Value<bool?> preferASN,
       Value<int?> tolerance,
       Value<String?> strategy,
       Value<bool?> includeAll,
@@ -6201,6 +6479,11 @@ typedef $$ProxyGroupsTableUpdateCompanionBuilder =
       Value<String?> excludeFilter,
       Value<String?> excludeType,
       Value<String?> expectedStatus,
+      Value<String?> policyPriority,
+      Value<bool?> useLightGBM,
+      Value<bool?> collectData,
+      Value<double?> sampleRate,
+      Value<bool?> preferASN,
       Value<int?> tolerance,
       Value<String?> strategy,
       Value<bool?> includeAll,
@@ -6316,6 +6599,31 @@ class $$ProxyGroupsTableFilterComposer
 
   ColumnFilters<String> get expectedStatus => $composableBuilder(
     column: $table.expectedStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get policyPriority => $composableBuilder(
+    column: $table.policyPriority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get useLightGBM => $composableBuilder(
+    column: $table.useLightGBM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get collectData => $composableBuilder(
+    column: $table.collectData,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sampleRate => $composableBuilder(
+    column: $table.sampleRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get preferASN => $composableBuilder(
+    column: $table.preferASN,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6467,6 +6775,31 @@ class $$ProxyGroupsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get policyPriority => $composableBuilder(
+    column: $table.policyPriority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get useLightGBM => $composableBuilder(
+    column: $table.useLightGBM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get collectData => $composableBuilder(
+    column: $table.collectData,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sampleRate => $composableBuilder(
+    column: $table.sampleRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get preferASN => $composableBuilder(
+    column: $table.preferASN,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get tolerance => $composableBuilder(
     column: $table.tolerance,
     builder: (column) => ColumnOrderings(column),
@@ -6595,6 +6928,29 @@ class $$ProxyGroupsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get policyPriority => $composableBuilder(
+    column: $table.policyPriority,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get useLightGBM => $composableBuilder(
+    column: $table.useLightGBM,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get collectData => $composableBuilder(
+    column: $table.collectData,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get sampleRate => $composableBuilder(
+    column: $table.sampleRate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get preferASN =>
+      $composableBuilder(column: $table.preferASN, builder: (column) => column);
+
   GeneratedColumn<int> get tolerance =>
       $composableBuilder(column: $table.tolerance, builder: (column) => column);
 
@@ -6693,6 +7049,11 @@ class $$ProxyGroupsTableTableManager
                 Value<String?> excludeFilter = const Value.absent(),
                 Value<String?> excludeType = const Value.absent(),
                 Value<String?> expectedStatus = const Value.absent(),
+                Value<String?> policyPriority = const Value.absent(),
+                Value<bool?> useLightGBM = const Value.absent(),
+                Value<bool?> collectData = const Value.absent(),
+                Value<double?> sampleRate = const Value.absent(),
+                Value<bool?> preferASN = const Value.absent(),
                 Value<int?> tolerance = const Value.absent(),
                 Value<String?> strategy = const Value.absent(),
                 Value<bool?> includeAll = const Value.absent(),
@@ -6718,6 +7079,11 @@ class $$ProxyGroupsTableTableManager
                 excludeFilter: excludeFilter,
                 excludeType: excludeType,
                 expectedStatus: expectedStatus,
+                policyPriority: policyPriority,
+                useLightGBM: useLightGBM,
+                collectData: collectData,
+                sampleRate: sampleRate,
+                preferASN: preferASN,
                 tolerance: tolerance,
                 strategy: strategy,
                 includeAll: includeAll,
@@ -6745,6 +7111,11 @@ class $$ProxyGroupsTableTableManager
                 Value<String?> excludeFilter = const Value.absent(),
                 Value<String?> excludeType = const Value.absent(),
                 Value<String?> expectedStatus = const Value.absent(),
+                Value<String?> policyPriority = const Value.absent(),
+                Value<bool?> useLightGBM = const Value.absent(),
+                Value<bool?> collectData = const Value.absent(),
+                Value<double?> sampleRate = const Value.absent(),
+                Value<bool?> preferASN = const Value.absent(),
                 Value<int?> tolerance = const Value.absent(),
                 Value<String?> strategy = const Value.absent(),
                 Value<bool?> includeAll = const Value.absent(),
@@ -6770,6 +7141,11 @@ class $$ProxyGroupsTableTableManager
                 excludeFilter: excludeFilter,
                 excludeType: excludeType,
                 expectedStatus: expectedStatus,
+                policyPriority: policyPriority,
+                useLightGBM: useLightGBM,
+                collectData: collectData,
+                sampleRate: sampleRate,
+                preferASN: preferASN,
                 tolerance: tolerance,
                 strategy: strategy,
                 includeAll: includeAll,

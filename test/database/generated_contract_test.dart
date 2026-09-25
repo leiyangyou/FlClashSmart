@@ -262,6 +262,11 @@ void main() {
       excludeFilter: 'exclude',
       excludeType: 'Direct',
       expectedStatus: '204',
+      policyPriority: 'ef:1.5',
+      useLightGBM: true,
+      collectData: false,
+      sampleRate: 0.25,
+      preferASN: true,
       tolerance: 50,
       strategy: 'round-robin',
       includeAll: true,
@@ -272,8 +277,8 @@ void main() {
       order: 'a0',
     );
 
-    expect(group.toColumns(true), hasLength(24));
-    expect(group.toCompanion(true).toColumns(true), hasLength(24));
+    expect(group.toColumns(true), hasLength(29));
+    expect(group.toCompanion(true).toColumns(true), hasLength(29));
     expect(RawProxyGroup.fromJson(group.toJson()).toJson(), group.toJson());
     expect(group.copyWith(name: 'Changed').name, 'Changed');
     expect(
@@ -293,7 +298,7 @@ void main() {
 
     const emptyGroup = RawProxyGroup(id: 21, name: 'Empty', type: 'select');
     expect(emptyGroup.toColumns(true), hasLength(3));
-    expect(emptyGroup.toColumns(false), hasLength(24));
+    expect(emptyGroup.toColumns(false), hasLength(29));
 
     final companion =
         ProxyGroupsCompanion.insert(name: 'Inserted', type: 'select').copyWith(
@@ -311,6 +316,11 @@ void main() {
           excludeFilter: const Value('exclude'),
           excludeType: const Value('Direct'),
           expectedStatus: const Value('204'),
+          policyPriority: const Value('ef:1.5'),
+          useLightGBM: const Value(true),
+          collectData: const Value(false),
+          sampleRate: const Value(0.25),
+          preferASN: const Value(true),
           tolerance: const Value(50),
           strategy: const Value('round-robin'),
           includeAll: const Value(true),
@@ -320,7 +330,7 @@ void main() {
           icon: const Value('icon'),
           order: const Value('a0'),
         );
-    expect(companion.toColumns(true), hasLength(24));
+    expect(companion.toColumns(true), hasLength(29));
     expect(companion.toString(), contains('Inserted'));
     expect(
       ProxyGroupsCompanion.custom(
@@ -340,6 +350,11 @@ void main() {
         excludeFilter: const Variable('exclude'),
         excludeType: const Variable('Direct'),
         expectedStatus: const Variable('204'),
+        policyPriority: const Variable('ef:1.5'),
+        useLightGBM: const Variable(true),
+        collectData: const Variable(false),
+        sampleRate: const Variable(0.25),
+        preferASN: const Variable(true),
         tolerance: const Variable(50),
         strategy: const Variable('round-robin'),
         includeAll: const Variable(true),
@@ -349,7 +364,7 @@ void main() {
         icon: const Variable('icon'),
         order: const Variable('a0'),
       ).toColumns(false),
-      hasLength(24),
+      hasLength(29),
     );
 
     const icon = IconRecord(

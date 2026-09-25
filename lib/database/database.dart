@@ -46,7 +46,7 @@ class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -83,6 +83,13 @@ class Database extends _$Database {
         }
         if (from < 8) {
           await m.alterTable(TableMigration(clashProviders));
+        }
+        if (from < 11) {
+          await _addColumnIfMissing(m, proxyGroups, proxyGroups.policyPriority);
+          await _addColumnIfMissing(m, proxyGroups, proxyGroups.useLightGBM);
+          await _addColumnIfMissing(m, proxyGroups, proxyGroups.collectData);
+          await _addColumnIfMissing(m, proxyGroups, proxyGroups.sampleRate);
+          await _addColumnIfMissing(m, proxyGroups, proxyGroups.preferASN);
         }
         // Ahead of the version 9 step, whose purge reaches every table.
         if (from < 10) {

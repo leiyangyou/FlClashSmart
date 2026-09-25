@@ -366,6 +366,12 @@ jobs:
           overwrite: true
 
   upload:
+    # Disabled in this fork. Upstream's job posts every installer to their
+    # @FlClash Telegram channel through a local bot API server that only exists
+    # on their runners, then deletes and republishes the tag's release with
+    # their multi-platform artifact set. release-android-arm64.yml publishes
+    # releases here, and a second publisher would race it over the same tag.
+    if: false
     permissions:
       contents: write
     needs: [ build ]

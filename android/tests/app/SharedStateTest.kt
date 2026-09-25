@@ -1,6 +1,6 @@
-package com.follow.clash.models
+package com.flsmart.clash.models
 
-import com.follow.clash.common.AccessControlMode
+import com.flsmart.clash.common.AccessControlMode
 import com.google.gson.Gson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

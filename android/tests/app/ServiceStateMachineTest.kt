@@ -1,11 +1,11 @@
-package com.follow.clash
+package com.flsmart.clash
 
-import com.follow.clash.common.AccessControlMode
-import com.follow.clash.models.SetupParams
-import com.follow.clash.models.SharedState
-import com.follow.clash.service.models.AccessControlProps
-import com.follow.clash.service.models.NotificationParams
-import com.follow.clash.service.models.VpnOptions
+import com.flsmart.clash.common.AccessControlMode
+import com.flsmart.clash.models.SetupParams
+import com.flsmart.clash.models.SharedState
+import com.flsmart.clash.service.models.AccessControlProps
+import com.flsmart.clash.service.models.NotificationParams
+import com.flsmart.clash.service.models.VpnOptions
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -95,7 +95,7 @@ private class FakeHost(override val scope: CoroutineScope) : ServiceStateHost {
     var beforeStartService: (() -> Unit)? = null
 
     override var runTimeMillis = 0L
-    override val homeDirPath = "/data/user/0/com.follow.clash/files"
+    override val homeDirPath = "/data/user/0/com.flsmart.clash/files"
     override val sdkInt = 34
 
     val toasts = mutableListOf<String>()

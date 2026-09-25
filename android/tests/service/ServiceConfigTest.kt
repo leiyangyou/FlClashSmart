@@ -1,9 +1,9 @@
-package com.follow.clash.service
+package com.flsmart.clash.service
 
-import com.follow.clash.common.AccessControlMode
-import com.follow.clash.service.models.AccessControlProps
-import com.follow.clash.service.models.NotificationParams
-import com.follow.clash.service.models.VpnOptions
+import com.flsmart.clash.common.AccessControlMode
+import com.flsmart.clash.service.models.AccessControlProps
+import com.flsmart.clash.service.models.NotificationParams
+import com.flsmart.clash.service.models.VpnOptions
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame

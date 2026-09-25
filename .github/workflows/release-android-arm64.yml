@@ -29,19 +29,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test commit message hook
-        run: bash tool/check_commit_msg_test.sh
-
-      - name: Test comment density hook
-        run: bash tool/check_comment_density_test.sh
-
-      - name: Validate model asset hash
-        shell: bash
-        run: |
-          expected=$(shasum -a 256 assets/data/Model.bin | awk '{print $1}')
-          actual=$(tr -d '[:space:]' < assets/data/Model.bin.sha256)
-          test "$expected" = "$actual"
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -49,21 +36,8 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Check format
-        run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
-
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Skip native build hooks
-        run: |
-          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
-
-      - name: Run tests
-        run: flutter test
+      - name: Dart checks and tests
+        run: bash tool/check_dart.sh
 
   android-tests:
     name: Android unit tests

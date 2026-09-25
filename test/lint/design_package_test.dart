@@ -25,9 +25,24 @@ bool _isGenerated(String path) {
       _generatedL10n.any(path.startsWith);
 }
 
+/// Vendored submodules are not this project's code, and CI checks the repo out
+/// without them, so skipping them keeps the local verdict equal to CI's.
+List<String> _submodulePaths() {
+  final file = File('.gitmodules');
+  if (!file.existsSync()) {
+    return const [];
+  }
+  return file
+      .readAsLinesSync()
+      .where((line) => line.trimLeft().startsWith('path ='))
+      .map((line) => line.split('=').last.trim())
+      .toList();
+}
+
 void main() {
   test('material_ui is the only design library the project imports', () {
     final offenders = <String>[];
+    final submodules = _submodulePaths();
 
     for (final root in _roots) {
       final directory = Directory(root);
@@ -40,6 +55,11 @@ void main() {
         }
         final relative = p.relative(entity.path);
         if (_isGenerated(relative)) {
+          continue;
+        }
+        if (submodules.any(
+          (path) => relative == path || relative.startsWith('$path/'),
+        )) {
           continue;
         }
         final lines = entity.readAsLinesSync();

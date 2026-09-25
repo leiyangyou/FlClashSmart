@@ -20,8 +20,102 @@ env:
   NDK_VERSION: r28c
 
 jobs:
+  dart-tests:
+    name: Dart checks and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Test commit message hook
+        run: bash tool/check_commit_msg_test.sh
+
+      - name: Test comment density hook
+        run: bash tool/check_comment_density_test.sh
+
+      - name: Validate model asset hash
+        shell: bash
+        run: |
+          expected=$(shasum -a 256 assets/data/Model.bin | awk '{print $1}')
+          actual=$(tr -d '[:space:]' < assets/data/Model.bin.sha256)
+          test "$expected" = "$actual"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check format
+        run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Skip native build hooks
+        run: |
+          yq -i '.hooks.user_defines.setup.build_assets = false | .hooks.user_defines.rust_api.build_assets = false' pubspec.yaml
+
+      - name: Run tests
+        run: flutter test
+
+  android-tests:
+    name: Android unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run Android unit tests
+        working-directory: android
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          {
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "sdk.dir=$ANDROID_HOME"
+          } > local.properties
+          wrapper="$FLUTTER_ROOT/bin/cache/artifacts/gradle_wrapper"
+          test -d "$wrapper" || flutter precache
+          cp -R "$wrapper/." .
+          chmod +x gradlew
+          ./gradlew :common:testDebugUnitTest :service:testDebugUnitTest :app:testDebugUnitTest \
+            -x :app:compileFlutterBuildDebug -x :app:copyFlutterAssetsDebug
+
   release:
     name: Android arm64
+    needs: [dart-tests, android-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -71,9 +165,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE" ] && [ -n "$KEY_ALIAS" ]; then
+            echo "signing with the repository keystore secret"
             echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
             store="$STORE_PASSWORD"; key="$KEY_PASSWORD"; alias="$KEY_ALIAS"
           else
+            echo "::warning::no repository keystore; generating a throwaway key, so this build cannot upgrade an existing install"
             store="$(openssl rand -hex 16)"; key="$store"; alias=flclashsmart
             keytool -genkeypair -keystore android/app/keystore.jks -storetype JKS \
               -alias "$alias" -keyalg RSA -keysize 2048 -validity 10000 \

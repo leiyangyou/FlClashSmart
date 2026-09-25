@@ -69,6 +69,7 @@ const _$GroupTypeEnumMap = {
   GroupType.Fallback: 'fallback',
   GroupType.LoadBalance: 'load-balance',
   GroupType.Relay: 'relay',
+  GroupType.Smart: 'smart',
 };
 
 const _$LoadBalanceStrategyEnumMap = {

@@ -362,15 +362,28 @@ void main() {
   });
 
   group('ProxyGroup JSON', () {
-    test('decodes a smart group out of a profile config', () {
+    test('decodes a smart group and keeps its tuning options', () {
       final group = ProxyGroup.fromJson({
         'id': 1,
         'name': '🇭🇰 香港节点',
         'type': 'smart',
+        'uselightgbm': true,
+        'policy-priority': 'ef:1.5;nx:0.5',
+        'sample-rate': 0.25,
+        'collectdata': false,
+        'prefer-asn': true,
+        'tolerance': 50,
       });
 
       expect(group.type, GroupType.Smart);
-      expect(group.toJson()['type'], 'smart');
+      final json = group.toJson();
+      expect(json['type'], 'smart');
+      expect(json['uselightgbm'], isTrue);
+      expect(json['policy-priority'], 'ef:1.5;nx:0.5');
+      expect(json['sample-rate'], 0.25);
+      expect(json['collectdata'], isFalse);
+      expect(json['prefer-asn'], isTrue);
+      expect(json['tolerance'], 50);
     });
 
     test('still decodes the latency based group types', () {

@@ -32,6 +32,31 @@ void _downgradeToV2(Database raw) {
   raw.execute('PRAGMA user_version = 2');
 }
 
+/// The SQL names drift generates for the LightGBM tuning columns, read off the
+/// generated table: the hand-written one only becomes real after the builder
+/// rewrites its column getters.
+Future<List<String>> _smartGroupColumns() async {
+  final probe = fl.Database(NativeDatabase.memory());
+  final columns = <String>[
+    probe.proxyGroups.policyPriority.name,
+    probe.proxyGroups.useLightGBM.name,
+    probe.proxyGroups.collectData.name,
+    probe.proxyGroups.sampleRate.name,
+    probe.proxyGroups.preferASN.name,
+    probe.proxyGroups.tolerance.name,
+  ];
+  await probe.close();
+  return columns;
+}
+
+/// Schema version 3 had no LightGBM tuning columns on `proxy_groups`.
+void _downgradeToV3(Database raw, List<String> columns) {
+  for (final column in columns) {
+    raw.execute('ALTER TABLE proxy_groups DROP COLUMN $column');
+  }
+  raw.execute('PRAGMA user_version = 3');
+}
+
 Set<String> _columnsOf(Database raw, String table) => {
   for (final row in raw.select('PRAGMA table_info($table)'))
     row['name'] as String,
@@ -76,7 +101,7 @@ void main() {
 
     await openAndMigrate();
 
-    expect(_userVersion(raw), 3);
+    expect(_userVersion(raw), 4);
   });
 
   test('the v3 upgrade adds match_target to profiles', () async {
@@ -86,7 +111,7 @@ void main() {
     await openAndMigrate();
 
     expect(_columnsOf(raw, 'profiles'), contains('match_target'));
-    expect(_userVersion(raw), 3);
+    expect(_userVersion(raw), 4);
   });
 
   test(
@@ -98,9 +123,20 @@ void main() {
       await openAndMigrate();
 
       expect(_columnsOf(raw, 'profiles'), contains('match_target'));
-      expect(_userVersion(raw), 3);
+      expect(_userVersion(raw), 4);
     },
   );
+
+  test('the v4 upgrade adds the smart group tuning columns', () async {
+    final columns = await _smartGroupColumns();
+    _downgradeToV3(raw, columns);
+    expect(_columnsOf(raw, 'proxy_groups'), isNot(containsAll(columns)));
+
+    await openAndMigrate();
+
+    expect(_columnsOf(raw, 'proxy_groups'), containsAll(columns));
+    expect(_userVersion(raw), 4);
+  });
 
   test('the upgrade creates the tables v2 added', () async {
     _downgradeToV1(raw);
@@ -173,7 +209,7 @@ void main() {
 
     final database = await openAndMigrate();
 
-    expect(_userVersion(raw), 3);
+    expect(_userVersion(raw), 4);
     expect(await database.customSelect('SELECT * FROM rules').get(), isEmpty);
   });
 
@@ -183,7 +219,7 @@ void main() {
     await openAndMigrate();
 
     expect(_columnsOf(raw, 'rules'), before);
-    expect(_userVersion(raw), 3);
+    expect(_userVersion(raw), 4);
     expect(_hasTable(raw, 'proxy_groups'), isTrue);
   });
 }

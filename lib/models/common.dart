@@ -424,7 +424,10 @@ extension GroupExt on Group {
 
   String getCurrentSelectedName(String proxyName) {
     if (type.isComputedSelected) {
-      return realNow.isNotEmpty ? realNow : proxyName;
+      if (realNow.isEmpty) return proxyName;
+      final namesMember =
+          all.isEmpty || all.any((proxy) => proxy.name == realNow);
+      return namesMember ? realNow : proxyName;
     }
     return proxyName.isNotEmpty ? proxyName : realNow;
   }

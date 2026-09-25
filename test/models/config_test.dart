@@ -361,6 +361,29 @@ void main() {
     });
   });
 
+  group('ProxyGroup JSON', () {
+    test('decodes a smart group out of a profile config', () {
+      final group = ProxyGroup.fromJson({
+        'id': 1,
+        'name': '🇭🇰 香港节点',
+        'type': 'smart',
+      });
+
+      expect(group.type, GroupType.Smart);
+      expect(group.toJson()['type'], 'smart');
+    });
+
+    test('still decodes the latency based group types', () {
+      final group = ProxyGroup.fromJson({
+        'id': 2,
+        'name': '♻️ 自动选择',
+        'type': 'url-test',
+      });
+
+      expect(group.type, GroupType.URLTest);
+    });
+  });
+
   group('Config composite serialization', () {
     test('DAVProps obfuscates and restores its password', () {
       const props = DAVProps(

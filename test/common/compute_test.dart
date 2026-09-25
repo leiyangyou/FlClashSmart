@@ -337,5 +337,28 @@ void main() {
       const group = Group(name: 'sel', type: GroupType.Selector);
       expect(group.getCurrentSelectedName(''), '');
     });
+
+    test(
+      'Smart group ignores the unpinned sentinel, which names no member',
+      () {
+        const group = Group(
+          name: 'hk',
+          type: GroupType.Smart,
+          now: 'Smart - Select',
+          all: [Proxy(name: 'hk-1', type: 'ss')],
+        );
+        expect(group.getCurrentSelectedName(''), '');
+      },
+    );
+
+    test('Smart group returns the pinned member', () {
+      const group = Group(
+        name: 'hk',
+        type: GroupType.Smart,
+        now: 'hk-1',
+        all: [Proxy(name: 'hk-1', type: 'ss')],
+      );
+      expect(group.getCurrentSelectedName(''), 'hk-1');
+    });
   });
 }

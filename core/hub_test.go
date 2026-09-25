@@ -289,6 +289,21 @@ func TestProxyGroupNamesEmptyList(t *testing.T) {
 	}
 }
 
+func TestProxyGroupNamesKeepsSmartGroups(t *testing.T) {
+	names := proxyGroupNames(
+		[]string{"Auto", "HK"},
+		typeMap(map[string]constant.AdapterType{
+			"Auto": constant.URLTest,
+			"HK":   constant.Smart,
+		}),
+	)
+
+	want := []string{"Auto", "HK"}
+	if strings.Join(names, ",") != strings.Join(want, ",") {
+		t.Fatalf("proxyGroupNames = %v, want %v", names, want)
+	}
+}
+
 func TestIsProxyGroupType(t *testing.T) {
 	groups := []constant.AdapterType{
 		constant.Selector,
@@ -296,6 +311,7 @@ func TestIsProxyGroupType(t *testing.T) {
 		constant.Fallback,
 		constant.Relay,
 		constant.LoadBalance,
+		constant.Smart,
 	}
 	for _, adapterType := range groups {
 		if !isProxyGroupType(adapterType) {

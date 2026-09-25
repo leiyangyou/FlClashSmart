@@ -16,6 +16,8 @@ actual=$(tr -d '[:space:]' < assets/data/Model.bin.sha256)
 test "$expected" = "$actual"
 echo "model asset hash matches"
 
+bash tool/check_submodules.sh
+
 flutter pub get
 
 # Vendored submodules are not this project's code, and CI checks the repo out

@@ -9,7 +9,7 @@ When updating from upstream, follow the rebase guide at `REBASE_UPSTREAM.md`.
 
 Own commits are deliberately few: 17 in the app repo (the 4 Smart patches plus the CI, release, test and group-support work), 4 in the kernel submodule (chen's adaptation patch plus our 3 Smart fixes). Everything else is upstream.
 
-- **Core submodule** (`core/Clash.Meta`) = `vernesong/Alpha` + chen's adaptation patch (`git cherry-pick -x $(git rev-parse chen/FlClash)`) + our 2 Smart fixes. Do NOT hand-maintain a parallel copy of chen's adaptation patch.
+- **Core submodule** (`core/Clash.Meta`) = `vernesong/Alpha` + chen's adaptation patch (`git cherry-pick -x $(git rev-parse chen/FlClash)`) + our 3 Smart fixes. Do NOT hand-maintain a parallel copy of chen's adaptation patch.
 - **App repo** = `chen08209/FlClash` main + 4 Smart patches (`git rebase upstream/main`).
 - Keep the submodule on branch `FlClash-smart-rebase` (origin = your own kernel fork).
 - Known kernel conflicts when replaying chen's patch (measured 2026-09-26, exactly these three):

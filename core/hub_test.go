@@ -1049,3 +1049,38 @@ func TestDumpRuleSetRejectsText(t *testing.T) {
 		t.Fatal("dumping a text rule set succeeded")
 	}
 }
+
+func TestHandleGetConfigReportsOnlyTheKeysTheProfileSets(t *testing.T) {
+	const fixtures = "../test/fixtures/profile_settings/source"
+	for name, want := range map[string][]string{
+		"minimal":      {"proxies", "rules"},
+		"ipv6_dns_ntp": {"dns", "ipv6", "ntp", "proxies", "rules"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, err := handleGetConfig(filepath.Join(fixtures, name+".yaml"))
+			if err != nil {
+				t.Fatalf("handleGetConfig: %v", err)
+			}
+			if !slices.Equal(got.ProfileKeys, want) {
+				t.Fatalf("ProfileKeys = %v, want %v", got.ProfileKeys, want)
+			}
+			encoded, err := json.MarshalIndent(got, "", "  ")
+			if err != nil {
+				t.Fatalf("marshal: %v", err)
+			}
+			goldenPath := filepath.Join(fixtures, name+".core.json")
+			if os.Getenv("UPDATE_GOLDENS") != "" {
+				if err := os.WriteFile(goldenPath, append(encoded, '\n'), 0o644); err != nil {
+					t.Fatalf("write golden: %v", err)
+				}
+			}
+			golden, err := os.ReadFile(goldenPath)
+			if err != nil {
+				t.Fatalf("read golden: %v", err)
+			}
+			if string(golden) != string(encoded)+"\n" {
+				t.Fatalf("%s is stale; the Dart tests read it as the core's reply. Regenerate with UPDATE_GOLDENS=1 go test -run %s .", goldenPath, t.Name())
+			}
+		})
+	}
+}

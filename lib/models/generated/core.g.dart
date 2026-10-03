@@ -21,13 +21,13 @@ _UpdateParams _$UpdateParamsFromJson(Map<String, dynamic> json) =>
     _UpdateParams(
       tun: Tun.fromJson(json['tun'] as Map<String, dynamic>),
       mixedPort: (json['mixed-port'] as num).toInt(),
-      allowLan: json['allow-lan'] as bool?,
+      allowLan: json['allow-lan'] as bool,
       findProcessMode: $enumDecodeNullable(
         _$FindProcessModeEnumMap,
         json['find-process-mode'],
       ),
       mode: $enumDecode(_$ModeEnumMap, json['mode']),
-      logLevel: $enumDecodeNullable(_$LogLevelEnumMap, json['log-level']),
+      logLevel: $enumDecode(_$LogLevelEnumMap, json['log-level']),
       ipv6: json['ipv6'] as bool?,
       tcpConcurrent: json['tcp-concurrent'] as bool?,
       externalController: $enumDecode(
@@ -56,7 +56,7 @@ Map<String, dynamic> _$UpdateParamsToJson(_UpdateParams instance) =>
       'allow-lan': instance.allowLan,
       'find-process-mode': _$FindProcessModeEnumMap[instance.findProcessMode],
       'mode': _$ModeEnumMap[instance.mode]!,
-      'log-level': _$LogLevelEnumMap[instance.logLevel],
+      'log-level': _$LogLevelEnumMap[instance.logLevel]!,
       'ipv6': instance.ipv6,
       'tcp-concurrent': instance.tcpConcurrent,
       'external-controller':

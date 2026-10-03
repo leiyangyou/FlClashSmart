@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -71,6 +72,7 @@ const _patchConfig = PatchClashConfig(
 Future<RealProfile> _build(
   Map<String, dynamic> rawConfig, {
   bool useProfileSettings = false,
+  Set<String>? profileKeys,
 }) {
   return makeRealProfileTask(
     MakeRealProfileState(
@@ -87,6 +89,7 @@ Future<RealProfile> _build(
       defaultUA: 'Default-UA',
       authentication: const ['app:secret'],
       useProfileSettings: useProfileSettings,
+      profileKeys: profileKeys ?? rawConfig.keys.toSet(),
     ),
   );
 }
@@ -102,8 +105,8 @@ Future<YamlMap> _config(
   return loadYaml(result.yaml) as YamlMap;
 }
 
-String _golden(String name) =>
-    File('$_fixtureDir/$name.yaml').readAsStringSync();
+String _golden(String name, {String extension = 'yaml'}) =>
+    File('$_fixtureDir/$name.$extension').readAsStringSync();
 
 void main() {
   group('the generated config with the toggle off', () {
@@ -125,8 +128,6 @@ void main() {
       'ipv6',
       'dns',
       'ntp',
-      'allow-lan',
-      'log-level',
       'find-process-mode',
       'interface-name',
       'tcp-concurrent',
@@ -143,8 +144,8 @@ void main() {
 
       expect(result.profileOwnedKeys, profilePreferenceKeys);
       expect(config['ipv6'], true);
-      expect(config['allow-lan'], true);
-      expect(config['log-level'], 'debug');
+      expect(config['allow-lan'], false);
+      expect(config['log-level'], 'warning');
       expect(config['find-process-mode'], 'strict');
       expect(config['interface-name'], 'en9');
       expect(config['tcp-concurrent'], false);
@@ -187,28 +188,76 @@ void main() {
       expect(config['ntp']['server'], 'time.cloudflare.com');
     });
 
-    test('an enabled DNS block without nameservers still resolves', () async {
-      final config = await _config({
-        'dns': {'enable': true, 'enhanced-mode': 'redir-host'},
-      });
+    test(
+      'a key the core filled in but the profile left out is the app\'s',
+      () async {
+        final coreFilled = {
+          ..._fullProfile(),
+          'dns': {
+            'enable': false,
+            'nameserver': ['https://doh.pub/dns-query'],
+          },
+        };
+        final off = await _build(coreFilled, profileKeys: {});
+        final on = await _build(
+          coreFilled,
+          useProfileSettings: true,
+          profileKeys: {'proxies', 'rules'},
+        );
 
-      expect(config['dns']['enhanced-mode'], 'redir-host');
-      expect(config['dns']['nameserver'], defaultDns.nameserver);
-      expect(config['dns']['listen'], isNull);
-    });
+        expect(on.profileOwnedKeys, isEmpty);
+        expect(on.yaml, off.yaml);
+      },
+    );
 
-    test('a disabled DNS block is still turned on', () async {
-      final config = await _config({
-        'dns': {
+    for (final (name, block) in [
+      (
+        'a disabled block',
+        {
           'enable': false,
           'nameserver': ['9.9.9.9'],
-          'listen': '0.0.0.0:53',
         },
-      });
+      ),
+      ('a block without enable', {'enhanced-mode': 'redir-host'}),
+      ('an empty block', <String, dynamic>{}),
+      ('an enabled block without nameservers', {'enable': true}),
+    ]) {
+      test('$name from the profile is kept as is', () async {
+        final config = await _config({'dns': block});
 
-      expect(config['dns']['enable'], true);
-      expect(config['dns']['nameserver'], defaultDns.nameserver);
-      expect(config['dns']['listen'], '0.0.0.0:53');
+        expect(config['dns'], block);
+      });
+    }
+  });
+
+  group('the updateConfig payload', () {
+    Map<String, dynamic> payload(Set<String> profileOwnedKeys) => _patchConfig
+        .toUpdateParams(
+          routeMode: RouteMode.config,
+          authentication: const ['app:secret'],
+          profileOwnedKeys: profileOwnedKeys,
+        )
+        .toJson();
+
+    test('with the toggle off matches its golden byte for byte', () {
+      final encoded = const JsonEncoder.withIndent('  ').convert(payload({}));
+
+      expect('$encoded\n', _golden('update_params', extension: 'json'));
+    });
+
+    test('leaves only the profile-owned keys unchanged', () {
+      final app = payload({});
+      final owned = payload(profilePreferenceKeys);
+
+      for (final key in app.keys) {
+        final leftUnchanged = {
+          'ipv6',
+          'find-process-mode',
+          'tcp-concurrent',
+          'unified-delay',
+        }.contains(key);
+        expect(owned[key], leftUnchanged ? isNull : app[key], reason: key);
+      }
     });
   });
 }

@@ -355,6 +355,7 @@ abstract class MakeRealProfileState with _$MakeRealProfileState {
     String? matchTarget,
     @Default(false) bool safeMode,
     @Default(false) bool useProfileSettings,
+    @Default({}) Set<String> profileKeys,
   }) = _MakeRealProfileState;
 }
 

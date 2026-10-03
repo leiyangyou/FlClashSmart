@@ -27,8 +27,6 @@ const profilePreferenceKeys = {
   'ipv6',
   'dns',
   'ntp',
-  'allow-lan',
-  'log-level',
   'find-process-mode',
   'interface-name',
   'tcp-concurrent',
@@ -40,12 +38,17 @@ const profilePreferenceKeys = {
 /// Always app-written: its inbounds, mode switcher, VPN lifecycle (tun), the
 /// Resources page's geo keys, the profile's own content and the control
 /// channel. Handing any to the profile puts the core out of the app's reach.
+/// log-level feeds the log view and the core error popup, and allow-lan opens
+/// a listener the app's Allow LAN row would still show as off.
+/// geodata-loader is in neither set and is always app-written as well.
 const appPlumbingKeys = {
   'mixed-port',
   'port',
   'socks-port',
   'redir-port',
   'tproxy-port',
+  'allow-lan',
+  'log-level',
   'mode',
   'tun',
   'geox-url',
@@ -68,11 +71,6 @@ const appPlumbingKeys = {
   'authentication',
   'skip-auth-prefixes',
   'profile',
-};
-
-Set<String> profileOwnedPreferenceKeys(Map rawConfig) => {
-  for (final key in profilePreferenceKeys)
-    if (rawConfig[key] != null) key,
 };
 
 const defaultGeoXUrl = {
@@ -248,8 +246,7 @@ extension ProxyGroupExt on ProxyGroup {
         'collectdata': collectData,
       if (type == GroupType.Smart && sampleRate != null)
         'sample-rate': sampleRate,
-      if (type == GroupType.Smart && preferASN != null)
-        'prefer-asn': preferASN,
+      if (type == GroupType.Smart && preferASN != null) 'prefer-asn': preferASN,
       if (type == GroupType.Smart && policyPriority?.isNotEmpty == true)
         'policy-priority': policyPriority,
       if (type == GroupType.LoadBalance && strategy != null)
@@ -1212,10 +1209,10 @@ extension PatchClashConfigExt on PatchClashConfig {
     return UpdateParams(
       tun: tun.getRealTun(routeMode),
       authentication: authentication,
-      allowLan: appOwned('allow-lan', allowLan),
+      allowLan: allowLan,
       findProcessMode: appOwned('find-process-mode', findProcessMode),
       mode: mode,
-      logLevel: appOwned('log-level', logLevel),
+      logLevel: logLevel,
       ipv6: appOwned('ipv6', ipv6),
       tcpConcurrent: appOwned('tcp-concurrent', tcpConcurrent),
       externalController: externalController,

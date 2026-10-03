@@ -26,6 +26,8 @@ import (
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/common/observable"
 	"github.com/metacubex/mihomo/common/utils"
+	"github.com/metacubex/mihomo/common/yaml"
+	"github.com/metacubex/mihomo/component/age"
 	"github.com/metacubex/mihomo/component/geodata"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/component/smart/lightgbm"
@@ -748,12 +750,36 @@ func handleGetMemoryStats() MemoryStats {
 	}
 }
 
-func handleGetConfig(path string) (*config.RawConfig, error) {
+// RawConfig carries every mihomo default; only ProfileKeys says what the file set.
+type profileConfig struct {
+	*config.RawConfig
+	ProfileKeys []string `json:"flclash-profile-keys"`
+}
+
+func handleGetConfig(path string) (*profileConfig, error) {
 	buf, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return config.UnmarshalRawConfig(buf)
+	rawConfig, err := config.UnmarshalRawConfig(buf)
+	if err != nil {
+		return nil, err
+	}
+	if buf, err = age.DecryptBytes(buf); err != nil {
+		return nil, err
+	}
+	var topLevel map[string]any
+	if err := yaml.Unmarshal(buf, &topLevel); err != nil {
+		return nil, err
+	}
+	profileKeys := []string{}
+	for key, value := range topLevel {
+		if value != nil {
+			profileKeys = append(profileKeys, key)
+		}
+	}
+	slices.Sort(profileKeys)
+	return &profileConfig{RawConfig: rawConfig, ProfileKeys: profileKeys}, nil
 }
 
 func handleDumpRuleSet(path string) (string, error) {

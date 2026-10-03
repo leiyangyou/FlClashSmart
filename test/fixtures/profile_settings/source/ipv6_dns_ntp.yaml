@@ -1,0 +1,13 @@
+ipv6: true
+global-ua:
+dns:
+  enable: true
+  enhanced-mode: redir-host
+  nameserver:
+    - 9.9.9.9
+ntp:
+  enable: true
+  server: ntp.aliyun.com
+proxies: []
+rules:
+  - MATCH,DIRECT

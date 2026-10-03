@@ -5,6 +5,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'generated/core.freezed.dart';
 part 'generated/core.g.dart';
 
+typedef ProfileConfig = ({
+  Map<String, dynamic> config,
+  Set<String> profileKeys,
+});
+
 @freezed
 abstract class SetupParams with _$SetupParams {
   const factory SetupParams({
@@ -21,11 +26,11 @@ abstract class UpdateParams with _$UpdateParams {
   const factory UpdateParams({
     required Tun tun,
     @JsonKey(name: 'mixed-port') required int mixedPort,
-    @JsonKey(name: 'allow-lan') required bool? allowLan,
+    @JsonKey(name: 'allow-lan') required bool allowLan,
     @JsonKey(name: 'find-process-mode')
     required FindProcessMode? findProcessMode,
     required Mode mode,
-    @JsonKey(name: 'log-level') required LogLevel? logLevel,
+    @JsonKey(name: 'log-level') required LogLevel logLevel,
     required bool? ipv6,
     @JsonKey(name: 'tcp-concurrent') required bool? tcpConcurrent,
     @JsonKey(name: 'external-controller')

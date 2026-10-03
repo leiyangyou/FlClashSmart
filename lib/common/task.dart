@@ -115,7 +115,7 @@ Future<RealProfile> makeRealProfileTask(MakeRealProfileState data) async {
 Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   final rawConfig = Map.from(data.rawConfig);
   final profileOwnedKeys = data.useProfileSettings
-      ? profileOwnedPreferenceKeys(rawConfig)
+      ? profilePreferenceKeys.intersection(data.profileKeys)
       : const <String>{};
   bool appOwns(String key) => !profileOwnedKeys.contains(key);
   void writePreference(String key, Object? value) {
@@ -181,7 +181,7 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   writePreference('tcp-concurrent', realPatchConfig.tcpConcurrent);
   writePreference('unified-delay', realPatchConfig.unifiedDelay);
   writePreference('ipv6', realPatchConfig.ipv6);
-  writePreference('log-level', realPatchConfig.logLevel.name);
+  rawConfig['log-level'] = realPatchConfig.logLevel.name;
   rawConfig['port'] = 0;
   rawConfig['socks-port'] = 0;
   writePreference('keep-alive-interval', realPatchConfig.keepAliveInterval);
@@ -191,7 +191,7 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   rawConfig['redir-port'] = realPatchConfig.redirPort;
   rawConfig['tproxy-port'] = realPatchConfig.tproxyPort;
   writePreference('find-process-mode', realPatchConfig.findProcessMode.name);
-  writePreference('allow-lan', realPatchConfig.allowLan);
+  rawConfig['allow-lan'] = realPatchConfig.allowLan;
   // The app owns local inbound authentication; a profile-provided
   // skip-auth-prefixes could silently exempt loopback and defeat it.
   rawConfig['authentication'] = data.authentication;
@@ -250,32 +250,34 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   for (final host in realPatchConfig.hosts.entries) {
     rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
   }
-  var rawDns = rawConfig['dns'] is Map
-      ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
-      : <String, dynamic>{};
-  final isEnableDns = rawDns['enable'] == true;
-  const systemDns = 'system://';
-  if (!isEnableDns) {
-    rawDns = mergeDnsOverride(
-      rawDns,
-      defaultDns.overrideJson(baselineDnsOverrideKeys),
-    );
-  }
-  if (!appOwns('dns')) {
-    final nameserver = rawDns[DnsOverrideKey.nameserver.path];
-    if (nameserver is! List || nameserver.isEmpty) {
+  if (appOwns('dns')) {
+    var rawDns = rawConfig['dns'] is Map
+        ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
+        : <String, dynamic>{};
+    final isEnableDns = rawDns['enable'] == true;
+    const systemDns = 'system://';
+    if (!isEnableDns) {
       rawDns = mergeDnsOverride(
         rawDns,
-        defaultDns.overrideJson({DnsOverrideKey.nameserver}),
+        defaultDns.overrideJson(baselineDnsOverrideKeys),
       );
     }
-  } else if (overrideDns || !isEnableDns) {
-    rawDns = mergeDnsOverride(
-      rawDns,
-      realPatchConfig.dns.overrideJson(realPatchConfig.dnsOverrideKeys),
-    );
+    if (overrideDns || !isEnableDns) {
+      rawDns = mergeDnsOverride(
+        rawDns,
+        realPatchConfig.dns.overrideJson(realPatchConfig.dnsOverrideKeys),
+      );
+    }
+    if (appendSystemDns) {
+      final List<String> nameserver = List<String>.from(
+        rawDns['nameserver'] ?? [],
+      );
+      if (!nameserver.contains(systemDns)) {
+        rawDns['nameserver'] = [...nameserver, systemDns];
+      }
+    }
+    rawConfig['dns'] = rawDns;
   }
-  rawConfig['dns'] = rawDns;
   if (overrideNtp && appOwns('ntp')) {
     final rawNtp = rawConfig['ntp'] is Map
         ? Map<String, dynamic>.from(rawConfig['ntp'] as Map)
@@ -284,14 +286,6 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
       ...rawNtp,
       ...realPatchConfig.ntp.overrideJson(realPatchConfig.ntpOverrideKeys),
     };
-  }
-  if (appendSystemDns && appOwns('dns')) {
-    final List<String> nameserver = List<String>.from(
-      rawConfig['dns']['nameserver'] ?? [],
-    );
-    if (!nameserver.contains(systemDns)) {
-      rawConfig['dns']['nameserver'] = [...nameserver, systemDns];
-    }
   }
   if (data.safeMode) {
     rawConfig['dns']['listen'] = '';

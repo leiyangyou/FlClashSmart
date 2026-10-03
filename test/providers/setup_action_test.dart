@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -946,9 +947,13 @@ void main() {
           'useProfileSettings $useProfileSettings', () async {
         final profile = Profile.normal(label: 'p');
         final core = _MockCoreHandlerInterface();
-        when(
-          () => core.getConfig(any()),
-        ).thenAnswer((_) async => {'ipv6': true, 'log-level': 'debug'});
+        when(() => core.getConfig(any())).thenAnswer(
+          (_) async => {
+            'ipv6': true,
+            'log-level': 'debug',
+            'flclash-profile-keys': ['ipv6', 'log-level'],
+          },
+        );
         String? pushedConfig;
         when(() => core.setupConfig(any())).thenAnswer((_) async {
           pushedConfig = await File(
@@ -996,13 +1001,126 @@ void main() {
                     as UpdateParams)
                 .toJson();
         expect(config['ipv6'], useProfileSettings);
+        expect(config['log-level'], 'error');
         expect(params['ipv6'], useProfileSettings ? isNull : false);
-        expect(params['log-level'], useProfileSettings ? isNull : 'error');
+        expect(params['log-level'], 'error');
         expect(params['allow-lan'], false);
         expect(params['tcp-concurrent'], true);
         expect(params['authentication'], ['user:pass']);
         expect(params['mixed-port'], defaultMixedPort);
         expect(params['mode'], 'rule');
+      });
+    }
+
+    test('switching the toggle off hands the runtime keys back to the app '
+        'even when the config is unchanged', () async {
+      final profile = Profile.normal(label: 'p');
+      final core = _MockCoreHandlerInterface();
+      when(() => core.getConfig(any())).thenAnswer(
+        (_) async => {
+          'ipv6': false,
+          'flclash-profile-keys': ['ipv6'],
+        },
+      );
+      when(() => core.setupConfig(any())).thenAnswer((_) async => '');
+      when(() => core.updateConfig(any())).thenAnswer((_) async => '');
+      final scoped = ProviderContainer(
+        overrides: [
+          profilesProvider.overrideWith(() => TestProfiles([profile])),
+          currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+          setupStateProvider.overrideWith(
+            (_, profileId) =>
+                nullProfileSetupState.copyWith(profileId: profileId),
+          ),
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          setupActionProvider.overrideWith(SetupAction.new),
+        ],
+      );
+      addTearDown(scoped.dispose);
+      scoped.listen(useProfileSettingsProvider, (_, _) {});
+      final setup = scoped.read(setupActionProvider.notifier);
+      Object? pushedIpv6() =>
+          (verify(() => core.updateConfig(captureAny())).captured.single
+                  as UpdateParams)
+              .toJson()['ipv6'];
+
+      scoped.read(useProfileSettingsProvider.notifier).value = true;
+      expect(await setup.applyProfile(force: true), isTrue);
+      await setup.updateConfig();
+      expect(pushedIpv6(), isNull);
+
+      scoped.read(useProfileSettingsProvider.notifier).value = false;
+      expect(await setup.applyProfile(), isTrue);
+      await setup.updateConfig();
+
+      verify(() => core.setupConfig(any())).called(1);
+      expect(pushedIpv6(), false);
+    });
+
+    for (final (fixture, owned) in [
+      ('minimal', <String>{}),
+      ('ipv6_dns_ntp', {'ipv6', 'dns', 'ntp'}),
+    ]) {
+      test('the $fixture profile as the core reads it owns $owned', () async {
+        final coreReply = jsonDecode(
+          File(
+            'test/fixtures/profile_settings/source/$fixture.core.json',
+          ).readAsStringSync(),
+        );
+        final profile = Profile.normal(label: 'p');
+        final core = _MockCoreHandlerInterface();
+        when(() => core.getConfig(any())).thenAnswer((_) async => coreReply);
+        Future<RealProfile> build(bool useProfileSettings) async {
+          final scoped = ProviderContainer(
+            overrides: [
+              coreHandlerProvider.overrideWithValue(
+                CoreController.scoped(core),
+              ),
+              setupActionProvider.overrideWith(SetupAction.new),
+              useProfileSettingsProvider.overrideWithBuild(
+                (_, _) => useProfileSettings,
+              ),
+              networkSettingProvider.overrideWithBuild(
+                (_, _) => const NetworkProps(appendSystemDns: true),
+              ),
+            ],
+          );
+          addTearDown(scoped.dispose);
+          return scoped
+              .read(setupActionProvider.notifier)
+              .getProfile(
+                setupState: nullProfileSetupState.copyWith(
+                  profileId: profile.id,
+                ),
+                patchConfig: const PatchClashConfig(),
+              );
+        }
+
+        final off = await build(false);
+        final on = await build(true);
+        final offConfig = loadYaml(off.yaml) as YamlMap;
+        final onConfig = loadYaml(on.yaml) as YamlMap;
+        final profileConfig = jsonDecode(jsonEncode(coreReply)) as Map;
+
+        expect(on.profileOwnedKeys, owned);
+        expect(onConfig.containsKey('flclash-profile-keys'), isFalse);
+        for (final key in profilePreferenceKeys) {
+          final want = owned.contains(key)
+              ? profileConfig[key]
+              : offConfig[key];
+          expect(
+            jsonDecode(jsonEncode(onConfig[key])),
+            jsonDecode(jsonEncode(want)),
+            reason: key,
+          );
+        }
+        expect(
+          (onConfig['dns']['nameserver'] as List).contains('system://'),
+          !owned.contains('dns'),
+        );
+        if (owned.isEmpty) {
+          expect(on.yaml, off.yaml);
+        }
       });
     }
 

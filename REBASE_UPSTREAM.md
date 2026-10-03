@@ -95,6 +95,19 @@ git fetch upstream main
 git rebase upstream/main
 ```
 
+> **force-push 前先看远端有没有别人（或 CI）加的 commit。** rebase 后本地历史被重写，
+> `--force-with-lease` 只保证“远端没有在 fetch 之后变过”，不保证远端那些 commit 是我的。
+> 实测 2026-10-03 就吃了一次：`origin/smart` 上有一个 2026-09-27 的
+> `ci(android): build the armeabi-v7a APK alongside arm64`（`e253dae`），force-push 直接把它盖掉，
+> 只能再从本地对象库 cherry-pick 回来。所以推之前先跑：
+>
+> ```bash
+> git fetch origin
+> git log --oneline origin/smart --not HEAD   # 有输出 = 这些是我可能盖掉的东西
+> ```
+>
+> 有输出就先 cherry-pick（保留作者与日期）再推；没有才 force-push。
+
 主仓库 20 个 commit，按性质分组（2026-10-03 实测的冲突面）：
 
 | 类 | Commit | 内容 | 冲突 |

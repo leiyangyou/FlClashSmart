@@ -14,7 +14,7 @@ concurrency:
 
 env:
   IS_STABLE: ${{ !contains(github.ref, '-') }}
-  FLUTTER_VERSION: '3.47.4'
+  FLUTTER_VERSION: '3.47.6'
   GO_VERSION: '1.26.4'
   NDK_VERSION: r28c
 
@@ -62,7 +62,14 @@ jobs:
         run: flutter pub get
 
       - name: Check format
-        run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
+        # Every plugin directory this fork tracks. The two vendored submodules
+        # (flutter_distributor, tray_manager) stay out: their sources are formatted
+        # for another Dart version and we cannot fix that without committing into
+        # those third-party pins.
+        run: |
+          dart format --output=none --set-exit-if-changed \
+            lib test tool setup.dart \
+            $(git ls-files plugins | cut -d/ -f1-2 | sort -u | grep -v -x -e plugins/flutter_distributor -e plugins/tray_manager)
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos

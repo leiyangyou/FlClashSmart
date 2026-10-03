@@ -96,10 +96,7 @@ final _testOverwriteDataProvider =
       _TestOverwriteData.new,
     );
 
-void _setViewport(
-  WidgetTester tester, [
-  Size size = const Size(1400, 1000),
-]) {
+void _setViewport(WidgetTester tester, [Size size = const Size(1400, 1000)]) {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -150,9 +147,7 @@ Future<_TestProxyGroups> _pumpProxyGroups(
   );
   addTearDown(container.dispose);
   globalState.container = container;
-  container
-      .read(viewSizeProvider.notifier)
-      .update((_) => viewport);
+  container.read(viewSizeProvider.notifier).update((_) => viewport);
 
   await tester.pumpWidget(
     UncontrolledProviderScope(
@@ -319,7 +314,9 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('a selector group editor offers no smart options', (tester) async {
+  testWidgets('a selector group editor offers no smart options', (
+    tester,
+  ) async {
     await _pumpProxyGroups(tester, viewport: const Size(1400, 2600));
 
     await tester.tap(find.text('Group 0'));

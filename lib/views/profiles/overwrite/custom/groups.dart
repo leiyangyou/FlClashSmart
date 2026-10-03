@@ -664,9 +664,7 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
           }
           ref
               .read(proxyGroupProvider.notifier)
-              .update(
-                (state) => state.copyWith(sampleRate: parsed),
-              );
+              .update((state) => state.copyWith(sampleRate: parsed));
         },
         decoration: InputDecoration.collapsed(
           border: const NoInputBorder(),

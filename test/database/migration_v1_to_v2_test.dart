@@ -404,27 +404,30 @@ void main() {
     expect(await database.customProxiesDao.query(1).get(), isEmpty);
   });
 
-  test('the v11 upgrade adds the smart group options to proxy_groups', () async {
-    _downgradeToV10(raw);
-    expect(
-      _columnsOf(raw, 'proxy_groups'),
-      isNot(contains('policy_priority')),
-    );
+  test(
+    'the v11 upgrade adds the smart group options to proxy_groups',
+    () async {
+      _downgradeToV10(raw);
+      expect(
+        _columnsOf(raw, 'proxy_groups'),
+        isNot(contains('policy_priority')),
+      );
 
-    await openAndMigrate();
+      await openAndMigrate();
 
-    expect(
-      _columnsOf(raw, 'proxy_groups'),
-      containsAll([
-        'policy_priority',
-        'use_light_g_b_m',
-        'collect_data',
-        'sample_rate',
-        'prefer_a_s_n',
-      ]),
-    );
-    expect(_userVersion(raw), 12);
-  });
+      expect(
+        _columnsOf(raw, 'proxy_groups'),
+        containsAll([
+          'policy_priority',
+          'use_light_g_b_m',
+          'collect_data',
+          'sample_rate',
+          'prefer_a_s_n',
+        ]),
+      );
+      expect(_userVersion(raw), 12);
+    },
+  );
 
   test(
     'a v10 user_version with the v11 columns already present still opens',

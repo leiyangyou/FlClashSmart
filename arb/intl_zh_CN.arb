@@ -777,5 +777,11 @@
   "large": "大",
   "extraLarge": "超大",
   "switchProfile": "切换配置",
-  "lastUpdated": "上次更新"
+  "lastUpdated": "上次更新",
+  "smartOptions": "Smart 选项",
+  "useLightGBM": "LightGBM 模型",
+  "sampleRate": "采样率",
+  "preferAsn": "优先按 ASN",
+  "collectData": "采集训练数据",
+  "policyPriority": "策略优先级"
 }

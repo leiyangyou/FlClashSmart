@@ -89,15 +89,22 @@ final _testOverwriteDataProvider =
       _TestOverwriteData.new,
     );
 
-void _setViewport(WidgetTester tester) {
-  tester.view.physicalSize = const Size(1400, 1000);
+void _setViewport(
+  WidgetTester tester, [
+  Size size = const Size(1400, 1000),
+]) {
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-Future<_TestProxyGroups> _pumpProxyGroups(WidgetTester tester) async {
-  _setViewport(tester);
+Future<_TestProxyGroups> _pumpProxyGroups(
+  WidgetTester tester, {
+  GroupType type = GroupType.Selector,
+  Size viewport = const Size(1400, 1000),
+}) async {
+  _setViewport(tester, viewport);
   final profile = Profile.normal().copyWith(
     overwriteType: OverwriteType.custom,
   );
@@ -107,7 +114,7 @@ Future<_TestProxyGroups> _pumpProxyGroups(WidgetTester tester) async {
       id: 100 + index,
       profileId: profile.id,
       name: 'Group $index',
-      type: GroupType.Selector,
+      type: type,
       proxies: const ['DIRECT'],
     ),
   );
@@ -136,7 +143,7 @@ Future<_TestProxyGroups> _pumpProxyGroups(WidgetTester tester) async {
   globalState.container = container;
   container
       .read(viewSizeProvider.notifier)
-      .update((_) => const Size(1400, 1000));
+      .update((_) => viewport);
 
   await tester.pumpWidget(
     UncontrolledProviderScope(
@@ -164,6 +171,69 @@ void main() {
       find.descendant(of: rows.last, matching: find.byType(Divider)),
       findsNothing,
     );
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a smart group editor offers its options and toggles them', (
+    tester,
+  ) async {
+    // Tall enough that the whole sheet is laid out, so no row hides below the fold.
+    await _pumpProxyGroups(
+      tester,
+      type: GroupType.Smart,
+      viewport: const Size(1400, 2600),
+    );
+
+    await tester.tap(find.text('Group 0'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    final l10n = AppLocalizations.current;
+    for (final title in [
+      l10n.useLightGBM,
+      l10n.sampleRate,
+      l10n.preferAsn,
+      l10n.collectData,
+      l10n.policyPriority,
+    ]) {
+      expect(
+        find.ancestor(
+          of: find.text(title),
+          matching: find.byType(OverwriteFormRow),
+        ),
+        findsOneWidget,
+        reason: 'the "$title" row should be offered for a smart group',
+      );
+    }
+
+    final modelRow = find.ancestor(
+      of: find.text(l10n.useLightGBM),
+      matching: find.byType(OverwriteFormRow),
+    );
+    final modelSwitch = find.descendant(
+      of: modelRow,
+      matching: find.byType(Switch),
+    );
+    expect(tester.widget<Switch>(modelSwitch).value, isFalse);
+
+    await tester.tap(modelRow);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Switch>(modelSwitch).value, isTrue);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a selector group editor offers no smart options', (tester) async {
+    await _pumpProxyGroups(tester, viewport: const Size(1400, 2600));
+
+    await tester.tap(find.text('Group 0'));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.current;
+    expect(find.text(l10n.smartOptions), findsNothing);
+    expect(find.text(l10n.useLightGBM), findsNothing);
+    expect(find.text(l10n.policyPriority), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });

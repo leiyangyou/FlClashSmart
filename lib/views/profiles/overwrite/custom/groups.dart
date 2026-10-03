@@ -623,6 +623,74 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
     );
   }
 
+  Widget _buildSwitchItem({
+    required String title,
+    required bool? value,
+    required ProxyGroup Function(ProxyGroup state, bool value) apply,
+  }) {
+    void handleChange() {
+      ref
+          .read(proxyGroupProvider.notifier)
+          .update((state) => apply(state, !(value ?? false)));
+    }
+
+    return _buildItem(
+      title: title,
+      onPressed: handleChange,
+      trailing: Switch(
+        value: value ?? false,
+        onChanged: (_) {
+          handleChange();
+        },
+      ),
+    );
+  }
+
+  Widget _buildSampleRateItem(double? sampleRate) {
+    final appLocalizations = context.appLocalizations;
+    return _buildItem(
+      title: appLocalizations.sampleRate,
+      trailing: TextFormField(
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: TextInputLimits.decimalOnly(TextInputLimits.decimal),
+        textAlign: TextAlign.end,
+        initialValue: sampleRate?.toString(),
+        onChanged: (value) {
+          ref
+              .read(proxyGroupProvider.notifier)
+              .update(
+                (state) => state.copyWith(sampleRate: double.tryParse(value)),
+              );
+        },
+        decoration: InputDecoration.collapsed(
+          border: const NoInputBorder(),
+          hintText: appLocalizations.optional,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPolicyPriorityItem(String? policyPriority) {
+    final appLocalizations = context.appLocalizations;
+    return _buildItem(
+      title: appLocalizations.policyPriority,
+      trailing: TextFormField(
+        textAlign: TextAlign.end,
+        initialValue: policyPriority,
+        inputFormatters: TextInputLimits.limit(TextInputLimits.rule),
+        onChanged: (value) {
+          ref
+              .read(proxyGroupProvider.notifier)
+              .update((state) => state.copyWith(policyPriority: value));
+        },
+        decoration: InputDecoration.collapsed(
+          border: const NoInputBorder(),
+          hintText: appLocalizations.optional,
+        ),
+      ),
+    );
+  }
+
   Widget _field<S>(
     S Function(ProxyGroup state) selector,
     Widget Function(S value) builder,
@@ -778,6 +846,43 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
                   _field((state) => state.strategy, _buildStrategyItem),
               ],
             ),
+            if (type == GroupType.Smart)
+              generateSectionV3(
+                title: appLocalizations.smartOptions,
+                items: [
+                  _field(
+                    (state) => state.useLightGBM,
+                    (value) => _buildSwitchItem(
+                      title: appLocalizations.useLightGBM,
+                      value: value,
+                      apply: (state, value) =>
+                          state.copyWith(useLightGBM: value),
+                    ),
+                  ),
+                  _field((state) => state.sampleRate, _buildSampleRateItem),
+                  _field(
+                    (state) => state.preferASN,
+                    (value) => _buildSwitchItem(
+                      title: appLocalizations.preferAsn,
+                      value: value,
+                      apply: (state, value) => state.copyWith(preferASN: value),
+                    ),
+                  ),
+                  _field(
+                    (state) => state.collectData,
+                    (value) => _buildSwitchItem(
+                      title: appLocalizations.collectData,
+                      value: value,
+                      apply: (state, value) =>
+                          state.copyWith(collectData: value),
+                    ),
+                  ),
+                  _field(
+                    (state) => state.policyPriority,
+                    _buildPolicyPriorityItem,
+                  ),
+                ],
+              ),
             generateSectionV3(
               title: appLocalizations.action,
               items: [

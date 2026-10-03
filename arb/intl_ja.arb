@@ -777,5 +777,11 @@
   "large": "大",
   "extraLarge": "特大",
   "switchProfile": "プロファイルを切り替え",
-  "lastUpdated": "最終更新"
+  "lastUpdated": "最終更新",
+  "smartOptions": "Smart オプション",
+  "useLightGBM": "LightGBM モデル",
+  "sampleRate": "サンプリング率",
+  "preferAsn": "ASN を優先",
+  "collectData": "学習データを収集",
+  "policyPriority": "ポリシー優先度"
 }

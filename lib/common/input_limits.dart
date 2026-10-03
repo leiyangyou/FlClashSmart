@@ -15,6 +15,7 @@ abstract final class TextInputLimits {
   static const fileName = 255;
   static const port = 5;
   static const number = 10;
+  static const decimal = 7;
   static const interval = number;
   static const search = 256;
   static const rule = 1024;
@@ -33,6 +34,13 @@ abstract final class TextInputLimits {
   static List<TextInputFormatter> digitsOnly(int maxLength) {
     return [
       FilteringTextInputFormatter.digitsOnly,
+      LengthLimitingTextInputFormatter(maxLength),
+    ];
+  }
+
+  static List<TextInputFormatter> decimalOnly(int maxLength) {
+    return [
+      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
       LengthLimitingTextInputFormatter(maxLength),
     ];
   }

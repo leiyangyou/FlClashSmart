@@ -6447,6 +6447,51 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Smart`
+  String get smartOptions {
+    return Intl.message('Smart', name: 'smartOptions', desc: '', args: []);
+  }
+
+  /// `LightGBM model`
+  String get useLightGBM {
+    return Intl.message(
+      'LightGBM model',
+      name: 'useLightGBM',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sample rate`
+  String get sampleRate {
+    return Intl.message('Sample rate', name: 'sampleRate', desc: '', args: []);
+  }
+
+  /// `Prefer ASN`
+  String get preferAsn {
+    return Intl.message('Prefer ASN', name: 'preferAsn', desc: '', args: []);
+  }
+
+  /// `Collect training data`
+  String get collectData {
+    return Intl.message(
+      'Collect training data',
+      name: 'collectData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Policy priority`
+  String get policyPriority {
+    return Intl.message(
+      'Policy priority',
+      name: 'policyPriority',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

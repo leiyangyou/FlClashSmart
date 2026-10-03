@@ -777,5 +777,11 @@
   "large": "Large",
   "extraLarge": "Extra large",
   "switchProfile": "Switch profile",
-  "lastUpdated": "Last updated"
+  "lastUpdated": "Last updated",
+  "smartOptions": "Smart",
+  "useLightGBM": "LightGBM model",
+  "sampleRate": "Sample rate",
+  "preferAsn": "Prefer ASN",
+  "collectData": "Collect training data",
+  "policyPriority": "Policy priority"
 }

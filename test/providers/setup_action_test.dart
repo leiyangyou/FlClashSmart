@@ -941,6 +941,71 @@ void main() {
       },
     );
 
+    for (final useProfileSettings in [false, true]) {
+      test('the runtime push after a profile apply with '
+          'useProfileSettings $useProfileSettings', () async {
+        final profile = Profile.normal(label: 'p');
+        final core = _MockCoreHandlerInterface();
+        when(
+          () => core.getConfig(any()),
+        ).thenAnswer((_) async => {'ipv6': true, 'log-level': 'debug'});
+        String? pushedConfig;
+        when(() => core.setupConfig(any())).thenAnswer((_) async {
+          pushedConfig = await File(
+            await appPath.configFilePath,
+          ).readAsString();
+          return '';
+        });
+        when(() => core.updateConfig(any())).thenAnswer((_) async => '');
+        final scoped = ProviderContainer(
+          overrides: [
+            profilesProvider.overrideWith(() => TestProfiles([profile])),
+            currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+            setupStateProvider.overrideWith(
+              (_, profileId) =>
+                  nullProfileSetupState.copyWith(profileId: profileId),
+            ),
+            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+            setupActionProvider.overrideWith(SetupAction.new),
+          ],
+        );
+        addTearDown(scoped.dispose);
+        scoped.listen(useProfileSettingsProvider, (_, _) {});
+        scoped.listen(networkSettingProvider, (_, _) {});
+        scoped.read(useProfileSettingsProvider.notifier).value =
+            useProfileSettings;
+        scoped
+            .read(networkSettingProvider.notifier)
+            .update(
+              (state) => state.copyWith(
+                authentication: const AuthenticationProps(
+                  enable: true,
+                  username: 'user',
+                  password: 'pass',
+                ),
+              ),
+            );
+        final setup = scoped.read(setupActionProvider.notifier);
+
+        expect(await setup.applyProfile(force: true), isTrue);
+        await setup.updateConfig();
+
+        final config = loadYaml(pushedConfig!) as YamlMap;
+        final params =
+            (verify(() => core.updateConfig(captureAny())).captured.single
+                    as UpdateParams)
+                .toJson();
+        expect(config['ipv6'], useProfileSettings);
+        expect(params['ipv6'], useProfileSettings ? isNull : false);
+        expect(params['log-level'], useProfileSettings ? isNull : 'error');
+        expect(params['allow-lan'], false);
+        expect(params['tcp-concurrent'], true);
+        expect(params['authentication'], ['user:pass']);
+        expect(params['mixed-port'], defaultMixedPort);
+        expect(params['mode'], 'rule');
+      });
+    }
+
     test('a custom overwrite injects only the providers it names', () async {
       final profile = Profile.normal(label: 'p');
       final core = _MockCoreHandlerInterface();

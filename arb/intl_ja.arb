@@ -783,5 +783,7 @@
   "sampleRate": "サンプリング率",
   "preferAsn": "ASN を優先",
   "collectData": "学習データを収集",
-  "policyPriority": "ポリシー優先度"
+  "policyPriority": "ポリシー優先度",
+  "useProfileSettings": "プロファイルの設定を使用",
+  "useProfileSettingsDesc": "有効にすると、IPv6、DNS、NTP などプロファイル自身が定義する設定がアプリの設定より優先されます"
 }

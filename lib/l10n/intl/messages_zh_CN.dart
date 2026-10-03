@@ -1125,6 +1125,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTip": m52,
     "useHosts": MessageLookupByLibrary.simpleMessage("使用Hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM 模型"),
+    "useProfileSettings": MessageLookupByLibrary.simpleMessage("使用配置文件设置"),
+    "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "开启后，配置文件自带的设置（如 IPv6、DNS、NTP）优先于应用设置",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系统Hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("已用流量"),
     "userAgent": MessageLookupByLibrary.simpleMessage("用户代理"),

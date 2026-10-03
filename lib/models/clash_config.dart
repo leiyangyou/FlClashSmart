@@ -22,6 +22,59 @@ const baselineDnsOverrideKeys = {
   DnsOverrideKey.enhancedMode,
   DnsOverrideKey.nameserver,
 };
+
+const profilePreferenceKeys = {
+  'ipv6',
+  'dns',
+  'ntp',
+  'allow-lan',
+  'log-level',
+  'find-process-mode',
+  'interface-name',
+  'tcp-concurrent',
+  'unified-delay',
+  'keep-alive-interval',
+  'global-ua',
+};
+
+/// Always app-written: its inbounds, mode switcher, VPN lifecycle (tun), the
+/// Resources page's geo keys, the profile's own content and the control
+/// channel. Handing any to the profile puts the core out of the app's reach.
+const appPlumbingKeys = {
+  'mixed-port',
+  'port',
+  'socks-port',
+  'redir-port',
+  'tproxy-port',
+  'mode',
+  'tun',
+  'geox-url',
+  'lgbm-url',
+  'geo-auto-update',
+  'geo-update-interval',
+  'hosts',
+  'proxies',
+  'proxy-groups',
+  'rules',
+  'proxy-providers',
+  'rule-providers',
+  'sniffer',
+  'external-controller',
+  'external-controller-tls',
+  'external-controller-unix',
+  'external-controller-pipe',
+  'external-ui',
+  'external-ui-url',
+  'authentication',
+  'skip-auth-prefixes',
+  'profile',
+};
+
+Set<String> profileOwnedPreferenceKeys(Map rawConfig) => {
+  for (final key in profilePreferenceKeys)
+    if (rawConfig[key] != null) key,
+};
+
 const defaultGeoXUrl = {
   GeoResource.MMDB:
       'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
@@ -1152,18 +1205,21 @@ extension PatchClashConfigExt on PatchClashConfig {
   UpdateParams toUpdateParams({
     required RouteMode routeMode,
     required List<String> authentication,
+    Set<String> profileOwnedKeys = const {},
   }) {
+    T? appOwned<T>(String key, T value) =>
+        profileOwnedKeys.contains(key) ? null : value;
     return UpdateParams(
       tun: tun.getRealTun(routeMode),
       authentication: authentication,
-      allowLan: allowLan,
-      findProcessMode: findProcessMode,
+      allowLan: appOwned('allow-lan', allowLan),
+      findProcessMode: appOwned('find-process-mode', findProcessMode),
       mode: mode,
-      logLevel: logLevel,
-      ipv6: ipv6,
-      tcpConcurrent: tcpConcurrent,
+      logLevel: appOwned('log-level', logLevel),
+      ipv6: appOwned('ipv6', ipv6),
+      tcpConcurrent: appOwned('tcp-concurrent', tcpConcurrent),
       externalController: externalController,
-      unifiedDelay: unifiedDelay,
+      unifiedDelay: appOwned('unified-delay', unifiedDelay),
       mixedPort: mixedPort,
       geoAutoUpdate: geoAutoUpdate,
       geoUpdateInterval: geoUpdateInterval,

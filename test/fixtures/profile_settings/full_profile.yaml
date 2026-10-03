@@ -1,0 +1,58 @@
+ipv6: false
+allow-lan: false
+log-level: "warning"
+find-process-mode: "always"
+interface-name: "eth0"
+tcp-concurrent: true
+unified-delay: true
+keep-alive-interval: 15
+global-ua: "App-UA"
+dns:
+  enable: true
+  listen: "0.0.0.0:1053"
+  enhanced-mode: "redir-host"
+  nameserver:
+    - "1.1.1.1"
+    - "system://"
+ntp:
+  enable: true
+  server: "time.cloudflare.com"
+  write-to-system: true
+  interval: 60
+mixed-port: 7893
+port: 7890
+socks-port: 7891
+redir-port: 7892
+tproxy-port: 7894
+mode: "rule"
+tun:
+  enable: false
+  stack: "mips"
+  device: "FlClash"
+  dns-hijack:
+    - "any:53"
+  route-address: []
+  auto-route: false
+geox-url:
+  mmdb: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb"
+  asn: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb"
+  geoip: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat"
+  geosite: "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+  model: "https://github.com/vernesong/mihomo/releases/download/LightGBM-Model/Model.bin"
+lgbm-url: "https://github.com/vernesong/mihomo/releases/download/LightGBM-Model/Model.bin"
+geo-auto-update: false
+geo-update-interval: 24
+external-controller: ""
+external-ui: ""
+external-ui-url: ""
+authentication:
+  - "app:secret"
+skip-auth-prefixes: []
+profile:
+  store-selected: false
+hosts:
+  profile.local: "10.0.0.1"
+  app.local: "10.0.0.2"
+rules:
+  - "MATCH,DIRECT"
+geodata-loader: "memconservative"

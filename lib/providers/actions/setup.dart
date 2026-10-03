@@ -23,6 +23,7 @@ class SetupAction extends _$SetupAction {
   final _listenerScheduler = SerialTaskScheduler();
   _RunRequest? _latestRunRequest;
   DateTime? _startTime;
+  Set<String> _profileOwnedKeys = const {};
 
   bool get _isRunning => _startTime != null && _startTime!.isBeforeNow;
 
@@ -254,6 +255,7 @@ class SetupAction extends _$SetupAction {
         _effectivePatchConfig(patchConfig).toUpdateParams(
           routeMode: networkSetting.routeMode,
           authentication: networkSetting.authentication.credentials,
+          profileOwnedKeys: _profileOwnedKeys,
         ),
       );
       if (message.isNotEmpty) throw MessageException(message);
@@ -332,12 +334,14 @@ class SetupAction extends _$SetupAction {
     }
   }
 
-  Future<({String yaml, String md5})> getProfile({
+  Future<RealProfile> getProfile({
     required SetupState setupState,
     required PatchClashConfig patchConfig,
   }) async {
     final profileId = setupState.profileId;
-    if (profileId == null) return (yaml: '', md5: '');
+    if (profileId == null) {
+      return (yaml: '', md5: '', profileOwnedKeys: const <String>{});
+    }
     final defaultUA = globalState.packageInfo.ua;
     final networkSetting = ref.read(
       networkSettingProvider.select(
@@ -350,6 +354,7 @@ class SetupAction extends _$SetupAction {
     );
     final overrideDns = ref.read(overrideDnsProvider);
     final overrideNtp = ref.read(overrideNtpProvider);
+    final useProfileSettings = ref.read(useProfileSettingsProvider);
     final appendSystemDns = networkSetting.appendSystemDns;
     final routeMode = networkSetting.routeMode;
     final configMap = await _core.getConfig(profileId);
@@ -399,6 +404,7 @@ class SetupAction extends _$SetupAction {
         authentication: networkSetting.authentication.credentials,
         matchTarget: setupState.matchTarget,
         safeMode: ref.read(safeModeProvider),
+        useProfileSettings: useProfileSettings,
       ),
     );
     return res;
@@ -579,6 +585,7 @@ class SetupAction extends _$SetupAction {
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
     if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
+      _profileOwnedKeys = realProfile.profileOwnedKeys;
       return _SetupTaskResult.completed;
     }
     if (system.isAndroid) {
@@ -613,6 +620,7 @@ class SetupAction extends _$SetupAction {
           rethrow;
         }
         globalState.lastConfigMd5 = yamlMd5;
+        _profileOwnedKeys = realProfile?.profileOwnedKeys ?? const {};
         await onUpdated?.call();
       },
       silence: true,

@@ -106,19 +106,22 @@ ClashConfig buildClashConfig(Map<String, dynamic> configMap) {
   return clashConfig.copyWith(proxyTypeMap: proxyTypeMap);
 }
 
-Future<({String yaml, String md5})> makeRealProfileTask(
-  MakeRealProfileState data,
-) async {
-  return compute<MakeRealProfileState, ({String yaml, String md5})>(
-    _makeRealProfileTask,
-    data,
-  );
+typedef RealProfile = ({String yaml, String md5, Set<String> profileOwnedKeys});
+
+Future<RealProfile> makeRealProfileTask(MakeRealProfileState data) async {
+  return compute<MakeRealProfileState, RealProfile>(_makeRealProfileTask, data);
 }
 
-Future<({String yaml, String md5})> _makeRealProfileTask(
-  MakeRealProfileState data,
-) async {
+Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   final rawConfig = Map.from(data.rawConfig);
+  final profileOwnedKeys = data.useProfileSettings
+      ? profileOwnedPreferenceKeys(rawConfig)
+      : const <String>{};
+  bool appOwns(String key) => !profileOwnedKeys.contains(key);
+  void writePreference(String key, Object? value) {
+    if (appOwns(key)) rawConfig[key] = value;
+  }
+
   final realPatchConfig = data.realPatchConfig;
   final profilesPath = data.profilesPath;
   final profileId = data.profileId;
@@ -168,27 +171,27 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
   rawConfig['external-ui'] = '';
   switch (realPatchConfig.interfaceNameMode) {
     case InterfaceNameMode.clear:
-      rawConfig['interface-name'] = '';
+      writePreference('interface-name', '');
     case InterfaceNameMode.follow:
       break;
     case InterfaceNameMode.custom:
-      rawConfig['interface-name'] = realPatchConfig.interfaceName;
+      writePreference('interface-name', realPatchConfig.interfaceName);
   }
   rawConfig['external-ui-url'] = '';
-  rawConfig['tcp-concurrent'] = realPatchConfig.tcpConcurrent;
-  rawConfig['unified-delay'] = realPatchConfig.unifiedDelay;
-  rawConfig['ipv6'] = realPatchConfig.ipv6;
-  rawConfig['log-level'] = realPatchConfig.logLevel.name;
+  writePreference('tcp-concurrent', realPatchConfig.tcpConcurrent);
+  writePreference('unified-delay', realPatchConfig.unifiedDelay);
+  writePreference('ipv6', realPatchConfig.ipv6);
+  writePreference('log-level', realPatchConfig.logLevel.name);
   rawConfig['port'] = 0;
   rawConfig['socks-port'] = 0;
-  rawConfig['keep-alive-interval'] = realPatchConfig.keepAliveInterval;
+  writePreference('keep-alive-interval', realPatchConfig.keepAliveInterval);
   rawConfig['mixed-port'] = realPatchConfig.mixedPort;
   rawConfig['port'] = realPatchConfig.port;
   rawConfig['socks-port'] = realPatchConfig.socksPort;
   rawConfig['redir-port'] = realPatchConfig.redirPort;
   rawConfig['tproxy-port'] = realPatchConfig.tproxyPort;
-  rawConfig['find-process-mode'] = realPatchConfig.findProcessMode.name;
-  rawConfig['allow-lan'] = realPatchConfig.allowLan;
+  writePreference('find-process-mode', realPatchConfig.findProcessMode.name);
+  writePreference('allow-lan', realPatchConfig.allowLan);
   // The app owns local inbound authentication; a profile-provided
   // skip-auth-prefixes could silently exempt loopback and defeat it.
   rawConfig['authentication'] = data.authentication;
@@ -240,7 +243,7 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
   rawConfig['lgbm-url'] =
       realPatchConfig.geoXUrl[GeoResource.MODEL] ??
       defaultGeoXUrl[GeoResource.MODEL];
-  rawConfig['global-ua'] = realPatchConfig.globalUa ?? defaultUA;
+  writePreference('global-ua', realPatchConfig.globalUa ?? defaultUA);
   if (rawConfig['hosts'] == null) {
     rawConfig['hosts'] = {};
   }
@@ -258,14 +261,22 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
       defaultDns.overrideJson(baselineDnsOverrideKeys),
     );
   }
-  if (overrideDns || !isEnableDns) {
+  if (!appOwns('dns')) {
+    final nameserver = rawDns[DnsOverrideKey.nameserver.path];
+    if (nameserver is! List || nameserver.isEmpty) {
+      rawDns = mergeDnsOverride(
+        rawDns,
+        defaultDns.overrideJson({DnsOverrideKey.nameserver}),
+      );
+    }
+  } else if (overrideDns || !isEnableDns) {
     rawDns = mergeDnsOverride(
       rawDns,
       realPatchConfig.dns.overrideJson(realPatchConfig.dnsOverrideKeys),
     );
   }
   rawConfig['dns'] = rawDns;
-  if (overrideNtp) {
+  if (overrideNtp && appOwns('ntp')) {
     final rawNtp = rawConfig['ntp'] is Map
         ? Map<String, dynamic>.from(rawConfig['ntp'] as Map)
         : <String, dynamic>{};
@@ -274,7 +285,7 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
       ...realPatchConfig.ntp.overrideJson(realPatchConfig.ntpOverrideKeys),
     };
   }
-  if (appendSystemDns) {
+  if (appendSystemDns && appOwns('dns')) {
     final List<String> nameserver = List<String>.from(
       rawConfig['dns']['nameserver'] ?? [],
     );
@@ -353,7 +364,7 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
   }
   rawConfig['rules'] = rules;
   final yaml = await _encodeYaml(Map<String, dynamic>.from(rawConfig));
-  return (yaml: yaml, md5: yaml.toMd5());
+  return (yaml: yaml, md5: yaml.toMd5(), profileOwnedKeys: profileOwnedKeys);
 }
 
 typedef ShakingStoreArgs = ({

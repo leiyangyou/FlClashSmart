@@ -6492,6 +6492,26 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Use my profile settings`
+  String get useProfileSettings {
+    return Intl.message(
+      'Use my profile settings',
+      name: 'useProfileSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app's`
+  String get useProfileSettingsDesc {
+    return Intl.message(
+      'When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app\'s',
+      name: 'useProfileSettingsDesc',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

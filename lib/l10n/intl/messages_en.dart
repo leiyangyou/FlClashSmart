@@ -1485,6 +1485,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTip": m52,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM model"),
+    "useProfileSettings": MessageLookupByLibrary.simpleMessage(
+      "Use my profile settings",
+    ),
+    "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app\'s",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("Used traffic"),
     "userAgent": MessageLookupByLibrary.simpleMessage("User-Agent"),

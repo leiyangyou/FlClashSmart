@@ -474,6 +474,59 @@ abstract class _$OverrideNtp extends $Notifier<bool> {
   }
 }
 
+@ProviderFor(UseProfileSettings)
+final useProfileSettingsProvider = UseProfileSettingsProvider._();
+
+final class UseProfileSettingsProvider
+    extends $NotifierProvider<UseProfileSettings, bool> {
+  UseProfileSettingsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'useProfileSettingsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$useProfileSettingsHash();
+
+  @$internal
+  @override
+  UseProfileSettings create() => UseProfileSettings();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$useProfileSettingsHash() =>
+    r'b5446eff1cb5dee17c683fffe75bbc51e1a037b9';
+
+abstract class _$UseProfileSettings extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(HotKeyActions)
 final hotKeyActionsProvider = HotKeyActionsProvider._();
 
@@ -721,4 +774,4 @@ final class _ConfigProvider extends $FunctionalProvider<Config, Config, Config>
   }
 }
 
-String _$_configHash() => r'654d23a6e5572e1368724378204e2b14087dad71';
+String _$_configHash() => r'c13c6993bc341bd81f9abf021cc900417f40c691';

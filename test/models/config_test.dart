@@ -577,9 +577,17 @@ void main() {
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, null);
       expect(restored.overrideDns, false);
+      expect(restored.useProfileSettings, false);
       expect(restored.networkProps.systemProxy, true);
       expect(restored.vpnProps.enable, true);
       expect(restored.hotKeyActions, isEmpty);
+    });
+
+    test('a config saved before useProfileSettings loads with it off', () {
+      final saved = const Config(themeProps: ThemeProps()).toJson()
+        ..remove('useProfileSettings');
+      final restored = roundTrip(() => saved, Config.fromJson);
+      expect(restored.useProfileSettings, false);
     });
 
     test('realFromJson handles null', () {
@@ -619,6 +627,7 @@ void main() {
       const config = Config(
         currentProfileId: 42,
         overrideDns: true,
+        useProfileSettings: true,
         hotKeyActions: [],
         appSettingProps: AppSettingProps(locale: 'en', autoLaunch: true),
         networkProps: NetworkProps(systemProxy: false),
@@ -632,6 +641,7 @@ void main() {
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, 42);
       expect(restored.overrideDns, true);
+      expect(restored.useProfileSettings, true);
       expect(restored.appSettingProps.locale, 'en');
       expect(restored.appSettingProps.autoLaunch, true);
       expect(restored.networkProps.systemProxy, false);

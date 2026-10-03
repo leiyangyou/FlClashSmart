@@ -1566,6 +1566,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTip": m52,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("Модель LightGBM"),
+    "useProfileSettings": MessageLookupByLibrary.simpleMessage(
+      "Использовать настройки профиля",
+    ),
+    "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "При включении настройки, заданные в самом профиле (например, IPv6, DNS и NTP), имеют приоритет над настройками приложения",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системный hosts",
     ),

@@ -211,6 +211,7 @@ void main() {
     test('reflects updated sub-provider values', () {
       container.read(currentProfileIdProvider.notifier).update((_) => 99);
       container.read(overrideDnsProvider.notifier).update((_) => true);
+      container.read(useProfileSettingsProvider.notifier).update((_) => true);
       container
           .read(patchClashConfigProvider.notifier)
           .update((_) => const PatchClashConfig(mixedPort: 7890));
@@ -221,6 +222,7 @@ void main() {
       final config = container.read(configProvider);
       expect(config.currentProfileId, 99);
       expect(config.overrideDns, true);
+      expect(config.useProfileSettings, true);
       expect(config.patchClashConfig.mixedPort, 7890);
       expect(config.excludeSSIDs, ['Office Wi-Fi']);
     });
@@ -233,9 +235,10 @@ void main() {
         currentProfileId: 7,
         overrideDns: true,
         overrideNtp: true,
+        useProfileSettings: true,
       );
       final overrides = buildConfigOverrides(config);
-      expect(overrides.length, 13);
+      expect(overrides.length, 14);
 
       final overrideContainer = ProviderContainer(overrides: overrides);
       addTearDown(overrideContainer.dispose);
@@ -243,6 +246,7 @@ void main() {
       expect(overrideContainer.read(currentProfileIdProvider), 7);
       expect(overrideContainer.read(overrideDnsProvider), true);
       expect(overrideContainer.read(overrideNtpProvider), true);
+      expect(overrideContainer.read(useProfileSettingsProvider), true);
       expect(
         overrideContainer.read(patchClashConfigProvider),
         config.patchClashConfig,

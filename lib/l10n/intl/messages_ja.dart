@@ -1260,6 +1260,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTip": m52,
     "useHosts": MessageLookupByLibrary.simpleMessage("Hostsを使用"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM モデル"),
+    "useProfileSettings": MessageLookupByLibrary.simpleMessage("プロファイルの設定を使用"),
+    "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
+      "有効にすると、IPv6、DNS、NTP などプロファイル自身が定義する設定がアプリの設定より優先されます",
+    ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムのHostsを使用"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
     "userAgent": MessageLookupByLibrary.simpleMessage("User-Agent"),

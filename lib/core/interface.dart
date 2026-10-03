@@ -219,11 +219,18 @@ abstract class CoreHandlerInterface with CoreInterface {
 
   @override
   Future<Set<String>> getProfileKeys(String path) async {
-    final keys = await _invokeMethod<Object?>(
-      method: CoreMethod.getProfileKeys,
-      arguments: path,
-    );
-    // Fail open: a profile that owns nothing gets the app's own values.
+    // Fail open: a profile that owns nothing gets the app's own values, and a
+    // core that does not know this method must not fail the whole setup.
+    Object? keys;
+    try {
+      keys = await _invokeMethod<Object?>(
+        method: CoreMethod.getProfileKeys,
+        arguments: path,
+      );
+    } catch (error) {
+      commonPrint.log('getProfileKeys $path failed, owning no keys: $error');
+      return const {};
+    }
     if (keys is! List || keys.any((key) => key is! String)) {
       return const {};
     }

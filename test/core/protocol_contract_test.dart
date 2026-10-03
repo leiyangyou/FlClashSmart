@@ -129,6 +129,28 @@ class _FailingConfigCoreHandler extends _RecordingCoreHandler {
   }
 }
 
+class _FailingProfileKeysCoreHandler extends _RecordingCoreHandler {
+  @override
+  Future<T?> invokeMethod<T>({
+    required CoreMethod method,
+    Object? arguments,
+    Duration? timeout,
+  }) async {
+    if (method == CoreMethod.getProfileKeys) {
+      // What an older core that does not know the method replies with.
+      throw const CoreMethodException(
+        code: 'core_error',
+        message: 'unknown method',
+      );
+    }
+    return super.invokeMethod(
+      method: method,
+      arguments: arguments,
+      timeout: timeout,
+    );
+  }
+}
+
 class _ProfileKeysCoreHandler extends _RecordingCoreHandler {
   final Object? profileKeys;
 
@@ -388,6 +410,12 @@ void main() {
       });
     });
   }
+
+  test('an error reply from getProfileKeys means no keys', () async {
+    final handler = _FailingProfileKeysCoreHandler();
+
+    expect(await handler.getProfileKeys('/profile.yaml'), isEmpty);
+  });
 
   test('getConfig preserves structured core errors', () async {
     final handler = _FailingConfigCoreHandler();

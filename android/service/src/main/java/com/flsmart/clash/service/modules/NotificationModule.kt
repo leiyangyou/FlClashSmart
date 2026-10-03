@@ -20,7 +20,7 @@ import com.flsmart.clash.service.R
 import com.flsmart.clash.service.ServiceConfig
 import com.flsmart.clash.service.models.NotificationParams
 import com.flsmart.clash.service.models.getSpeedTrafficText
-import com.flsmart.common.ensureNotificationChannel
+import com.flsmart.clash.common.ensureNotificationChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest

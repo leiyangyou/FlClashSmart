@@ -356,7 +356,7 @@ class SetupAction extends _$SetupAction {
     );
     final overrideDns = ref.read(overrideDnsProvider);
     final overrideNtp = ref.read(overrideNtpProvider);
-    final useProfileSettings = ref.read(useProfileSettingsProvider);
+    final useProfileSettings = setupState.useProfileSettings;
     final appendSystemDns = networkSetting.appendSystemDns;
     final routeMode = networkSetting.routeMode;
     final configMap = await _core.getConfig(profileId);
@@ -626,7 +626,7 @@ class SetupAction extends _$SetupAction {
       return realProfile;
     }, title: 'build profile');
     // The profile's own tun.enable decides consent, so it is built first.
-    final useProfileSettings = ref.read(useProfileSettingsProvider);
+    final useProfileSettings = profile?.useProfileSettings ?? false;
     final authorizationBefore = ref.read(authorizedTunEnableProvider);
     var realProfile = useProfileSettings ? await buildProfile() : null;
     final shouldContinueSetup = await requestAdmin(

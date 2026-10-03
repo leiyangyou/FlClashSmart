@@ -57,6 +57,7 @@ abstract class Profile with _$Profile {
     @Default(OverwriteType.standard) OverwriteType overwriteType,
     int? scriptId,
     String? matchTarget,
+    @Default(false) bool useProfileSettings,
     int? order,
   }) = _Profile;
 

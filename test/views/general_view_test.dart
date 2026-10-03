@@ -1,5 +1,4 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/general.dart';
@@ -11,7 +10,7 @@ import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
 void main() {
-  testWidgets('the use profile settings row writes its provider', (
+  testWidgets('the core section has no app-wide use profile settings row', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1200, 1000);
@@ -30,19 +29,13 @@ void main() {
       ),
     );
     await tester.pump();
-    final row = find.text(currentAppLocalizations.useProfileSettings);
     await tester.scrollUntilVisible(
-      row,
+      find.text(currentAppLocalizations.appendSystemDns),
       300,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(container.read(useProfileSettingsProvider), isFalse);
-    await tester.tap(row);
-    await tester.pump();
-    expect(container.read(useProfileSettingsProvider), isTrue);
-    await tester.tap(row);
-    await tester.pump();
-    expect(container.read(useProfileSettingsProvider), isFalse);
+    expect(find.text('IPv6'), findsOneWidget);
+    expect(find.text(currentAppLocalizations.useProfileSettings), findsNothing);
   });
 }

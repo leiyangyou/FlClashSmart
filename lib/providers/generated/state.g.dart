@@ -3770,7 +3770,7 @@ final class SetupStateProvider
   }
 }
 
-String _$setupStateHash() => r'72b42578f735bd51654de3af83d75525d5d91cb8';
+String _$setupStateHash() => r'f511654c619ba1506cf50f70da35a87630700ce8';
 
 final class SetupStateFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<SetupState>, int?> {

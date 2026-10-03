@@ -52,6 +52,7 @@ _Profile _$ProfileFromJson(Map<String, dynamic> json) => _Profile(
       OverwriteType.standard,
   scriptId: (json['scriptId'] as num?)?.toInt(),
   matchTarget: json['matchTarget'] as String?,
+  useProfileSettings: json['useProfileSettings'] as bool? ?? false,
   order: (json['order'] as num?)?.toInt(),
 );
 
@@ -69,6 +70,7 @@ Map<String, dynamic> _$ProfileToJson(_Profile instance) => <String, dynamic>{
   'overwriteType': _$OverwriteTypeEnumMap[instance.overwriteType]!,
   'scriptId': instance.scriptId,
   'matchTarget': instance.matchTarget,
+  'useProfileSettings': instance.useProfileSettings,
   'order': instance.order,
 };
 

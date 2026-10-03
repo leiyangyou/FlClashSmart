@@ -91,6 +91,7 @@ Future<SetupState> setupState(Ref ref, int? profileId) async {
     overrideDns: overrideDns,
     dns: dns,
     dnsOverrideKeys: dnsOverrideKeys,
+    useProfileSettings: profile?.useProfileSettings ?? false,
     matchTarget: overwriteType == OverwriteType.standard
         ? profile?.matchTarget
         : null,

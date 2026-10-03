@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/native.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
+import 'package:fl_clash/database/database.dart' as db;
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -134,6 +136,16 @@ const nullProfileSetupState = SetupState(
   dns: Dns(),
   dnsOverrideKeys: {},
 );
+
+/// Lets the real setupStateProvider derive a profile's setup from its row.
+void _useMemoryDatabase() {
+  final previous = db.database;
+  db.database = db.Database(NativeDatabase.memory());
+  addTearDown(() async {
+    await db.database.close();
+    db.database = previous;
+  });
+}
 
 class TestAuthorizingSetupAction extends SetupAction {
   int authorizeCalls = 0;
@@ -965,7 +977,9 @@ void main() {
     for (final useProfileSettings in [false, true]) {
       test('the runtime push after a profile apply with '
           'useProfileSettings $useProfileSettings', () async {
-        final profile = Profile.normal(label: 'p');
+        final profile = Profile.normal(
+          label: 'p',
+        ).copyWith(useProfileSettings: useProfileSettings);
         final core = _MockCoreHandlerInterface();
         when(
           () => core.getConfig(any()),
@@ -986,18 +1000,17 @@ void main() {
             profilesProvider.overrideWith(() => TestProfiles([profile])),
             currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
             setupStateProvider.overrideWith(
-              (_, profileId) =>
-                  nullProfileSetupState.copyWith(profileId: profileId),
+              (_, profileId) => nullProfileSetupState.copyWith(
+                profileId: profileId,
+                useProfileSettings: useProfileSettings,
+              ),
             ),
             coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
             setupActionProvider.overrideWith(SetupAction.new),
           ],
         );
         addTearDown(scoped.dispose);
-        scoped.listen(useProfileSettingsProvider, (_, _) {});
         scoped.listen(networkSettingProvider, (_, _) {});
-        scoped.read(useProfileSettingsProvider.notifier).value =
-            useProfileSettings;
         scoped
             .read(networkSettingProvider.notifier)
             .update(
@@ -1036,9 +1049,12 @@ void main() {
       });
     }
 
-    test('switching the toggle off hands the runtime keys back to the app '
-        'even when the config is unchanged', () async {
-      final profile = Profile.normal(label: 'p');
+    test('switching a profile\'s flag off hands the runtime keys back to the '
+        'app even when the config is unchanged', () async {
+      _useMemoryDatabase();
+      final profile = Profile.normal(
+        label: 'p',
+      ).copyWith(useProfileSettings: true);
       final core = _MockCoreHandlerInterface();
       when(
         () => core.getConfig(any()),
@@ -1050,34 +1066,83 @@ void main() {
         overrides: [
           profilesProvider.overrideWith(() => TestProfiles([profile])),
           currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
-          setupStateProvider.overrideWith(
-            (_, profileId) =>
-                nullProfileSetupState.copyWith(profileId: profileId),
-          ),
           coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
           setupActionProvider.overrideWith(SetupAction.new),
         ],
       );
       addTearDown(scoped.dispose);
-      scoped.listen(useProfileSettingsProvider, (_, _) {});
       final setup = scoped.read(setupActionProvider.notifier);
       Object? pushedIpv6() =>
           (verify(() => core.updateConfig(captureAny())).captured.single
                   as UpdateParams)
               .toJson()['ipv6'];
 
-      scoped.read(useProfileSettingsProvider.notifier).value = true;
       expect(await setup.applyProfile(force: true), isTrue);
       await setup.updateConfig();
       expect(pushedIpv6(), isNull);
 
-      scoped.read(useProfileSettingsProvider.notifier).value = false;
+      scoped
+          .read(profilesProvider.notifier)
+          .put(profile.copyWith(useProfileSettings: false));
       expect(await setup.applyProfile(), isTrue);
       await setup.updateConfig();
 
       verify(() => core.setupConfig(any())).called(1);
       expect(pushedIpv6(), false);
     });
+
+    test(
+      'each profile applies with its own use-profile-settings flag',
+      () async {
+        _useMemoryDatabase();
+        final owning = Profile.normal(
+          label: 'owning',
+        ).copyWith(useProfileSettings: true);
+        final plain = Profile.normal(label: 'plain');
+        final core = _MockCoreHandlerInterface();
+        when(
+          () => core.getConfig(any()),
+        ).thenAnswer((_) async => {'ipv6': true, 'log-level': 'debug'});
+        when(
+          () => core.getProfileKeys(any()),
+        ).thenAnswer((_) async => {'ipv6', 'log-level'});
+        when(() => core.setupConfig(any())).thenAnswer((_) async => '');
+        when(() => core.updateConfig(any())).thenAnswer((_) async => '');
+        final scoped = ProviderContainer(
+          overrides: [
+            profilesProvider.overrideWith(() => TestProfiles([owning, plain])),
+            currentProfileIdProvider.overrideWithBuild((_, _) => owning.id),
+            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+            setupActionProvider.overrideWith(SetupAction.new),
+          ],
+        );
+        addTearDown(scoped.dispose);
+        scoped.listen(currentProfileIdProvider, (_, _) {});
+        final setup = scoped.read(setupActionProvider.notifier);
+        Future<YamlMap> applied() async {
+          expect(await setup.applyProfile(force: true), isTrue);
+          return loadYaml(
+                await File(await appPath.configFilePath).readAsString(),
+              )
+              as YamlMap;
+        }
+
+        final owningConfig = await applied();
+        verify(
+          () => core.getProfileKeys(any(that: contains('${owning.id}'))),
+        ).called(1);
+        scoped.read(currentProfileIdProvider.notifier).value = plain.id;
+        final plainConfig = await applied();
+
+        expect(owningConfig['ipv6'], isTrue);
+        expect(owningConfig['log-level'], 'debug');
+        expect(plainConfig['ipv6'], isFalse);
+        expect(plainConfig['log-level'], 'error');
+        verifyNever(
+          () => core.getProfileKeys(any(that: contains('${plain.id}'))),
+        );
+      },
+    );
 
     test('a custom overwrite injects only the providers it names', () async {
       final profile = Profile.normal(label: 'p');
@@ -1311,22 +1376,22 @@ void main() {
         PatchClashConfig patchConfig = appPatchConfig,
         SetupAction Function()? action,
       }) {
-        final profile = Profile.normal(label: 'p');
+        final profile = Profile.normal(
+          label: 'p',
+        ).copyWith(useProfileSettings: useProfileSettings);
         final scoped = ProviderContainer(
           overrides: [
             profilesProvider.overrideWith(() => TestProfiles([profile])),
             currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
             setupStateProvider.overrideWith(
               (_, profileId) =>
-                  setupState?.call(profileId) ??
-                  nullProfileSetupState.copyWith(profileId: profileId),
+                  (setupState?.call(profileId) ??
+                          nullProfileSetupState.copyWith(profileId: profileId))
+                      .copyWith(useProfileSettings: useProfileSettings),
             ),
             coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
             setupActionProvider.overrideWith(
               action ?? TestAuthorizingSetupAction.new,
-            ),
-            useProfileSettingsProvider.overrideWithBuild(
-              (_, _) => useProfileSettings,
             ),
             overrideNtpProvider.overrideWithBuild((_, _) => true),
             networkSettingProvider.overrideWithBuild(
@@ -1366,7 +1431,10 @@ void main() {
             final res = await scoped
                 .read(setupActionProvider.notifier)
                 .getProfile(
-                  setupState: nullProfileSetupState.copyWith(profileId: 1),
+                  setupState: nullProfileSetupState.copyWith(
+                    profileId: 1,
+                    useProfileSettings: useProfileSettings,
+                  ),
                   patchConfig: appPatchConfig,
                 );
             return loadYaml(res.yaml) as YamlMap;

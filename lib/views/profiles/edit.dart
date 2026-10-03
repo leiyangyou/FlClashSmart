@@ -34,6 +34,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
   late final TextEditingController _urlController;
   late final TextEditingController _autoUpdateDurationController;
   late bool _autoUpdate;
+  late bool _useProfileSettings;
   String? _rawText;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _fileInfoNotifier = ValueNotifier<FileInfo?>(null);
@@ -46,6 +47,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     _labelController = TextEditingController(text: widget.profile.label);
     _urlController = TextEditingController(text: widget.profile.url);
     _autoUpdate = widget.profile.autoUpdate;
+    _useProfileSettings = widget.profile.useProfileSettings;
     _autoUpdateDurationController = TextEditingController(
       text: widget.profile.autoUpdateDuration.inMinutes.toString(),
     );
@@ -68,6 +70,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
       url: _urlController.text,
       label: _labelController.text,
       autoUpdate: _autoUpdate,
+      useProfileSettings: _useProfileSettings,
       autoUpdateDuration: Duration(
         minutes: int.parse(_autoUpdateDurationController.text),
       ),
@@ -258,6 +261,12 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
         fileInfoNotifier: _fileInfoNotifier,
         onEdit: _editProfileFile,
         onUpload: _uploadProfileFile,
+      ),
+      ListItem.toggle(
+        title: Text(appLocalizations.useProfileSettings),
+        subtitle: Text(appLocalizations.useProfileSettingsDesc),
+        value: _useProfileSettings,
+        onChanged: (value) => setState(() => _useProfileSettings = value),
       ),
     ];
     return FocusTraversalGroup(

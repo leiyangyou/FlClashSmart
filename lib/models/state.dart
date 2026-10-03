@@ -387,6 +387,7 @@ abstract class SetupState with _$SetupState {
     required bool overrideDns,
     required Dns dns,
     required Set<DnsOverrideKey> dnsOverrideKeys,
+    @Default(false) bool useProfileSettings,
     @Default([]) List<ClashProvider> clashProviders,
     @Default({}) Map<String, int> profileProviders,
     String? matchTarget,

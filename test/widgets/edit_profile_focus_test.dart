@@ -51,6 +51,20 @@ class _RenameConflictProfilesAction extends ProfilesAction {
       put.add(profile);
 }
 
+class _RecordingProfilesAction extends ProfilesAction {
+  final put = <Profile>[];
+
+  @override
+  Future<({List<Profile> renameIn, List<Profile> conflicts})> providerRename(
+    Profile previous,
+    Profile next,
+  ) async => (renameIn: const <Profile>[], conflicts: const <Profile>[]);
+
+  @override
+  void putProfile(Profile profile, {Iterable<int> renameIn = const []}) =>
+      put.add(profile);
+}
+
 Profile _urlProfile() =>
     Profile.normal(label: 'test', url: 'https://example.com/sub');
 
@@ -198,5 +212,24 @@ void main() {
       findsOneWidget,
     );
     expect(action.put, isEmpty);
+  });
+
+  testWidgets('the use profile settings switch is saved with the profile', (
+    tester,
+  ) async {
+    final action = _RecordingProfilesAction();
+    await pumpEditProfile(
+      tester,
+      overrides: [profilesActionProvider.overrideWith(() => action)],
+    );
+
+    final row = find.text(currentAppLocalizations.useProfileSettings);
+    await tester.ensureVisible(row);
+    await tester.tap(row);
+    await tester.pump();
+    await tester.tap(find.byTooltip(currentAppLocalizations.save));
+    await tester.pumpAndSettle();
+
+    expect(action.put.single.useProfileSettings, isTrue);
   });
 }

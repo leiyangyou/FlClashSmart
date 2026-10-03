@@ -37,6 +37,7 @@ void main() {
         unfoldSet: const {'Selector'},
         overwriteType: OverwriteType.custom,
         scriptId: 7,
+        useProfileSettings: true,
         order: 1,
       );
       const second = Profile(

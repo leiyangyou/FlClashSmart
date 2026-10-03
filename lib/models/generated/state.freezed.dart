@@ -9728,7 +9728,7 @@ as List<CustomProxy>,
 /// @nodoc
 mixin _$SetupState {
 
- int? get profileId; int? get profileLastUpdateDate; OverwriteType get overwriteType; List<Rule> get rules; List<ProxyGroup> get proxyGroups; List<Rule> get addedRules; Script? get script; List<CustomProxy> get customProxies; bool get overrideDns; Dns get dns; Set<DnsOverrideKey> get dnsOverrideKeys; List<ClashProvider> get clashProviders; Map<String, int> get profileProviders; String? get matchTarget;
+ int? get profileId; int? get profileLastUpdateDate; OverwriteType get overwriteType; List<Rule> get rules; List<ProxyGroup> get proxyGroups; List<Rule> get addedRules; Script? get script; List<CustomProxy> get customProxies; bool get overrideDns; Dns get dns; Set<DnsOverrideKey> get dnsOverrideKeys; bool get useProfileSettings; List<ClashProvider> get clashProviders; Map<String, int> get profileProviders; String? get matchTarget;
 /// Create a copy of SetupState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -9740,20 +9740,20 @@ $SetupStateCopyWith<SetupState> get copyWith => _$SetupStateCopyWithImpl<SetupSt
 @override
 bool operator ==(Object other) {
   final _this = this as SetupState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SetupState&&(identical(other.profileId, _this.profileId) || other.profileId == _this.profileId)&&(identical(other.profileLastUpdateDate, _this.profileLastUpdateDate) || other.profileLastUpdateDate == _this.profileLastUpdateDate)&&(identical(other.overwriteType, _this.overwriteType) || other.overwriteType == _this.overwriteType)&&const DeepCollectionEquality().equals(other.rules, _this.rules)&&const DeepCollectionEquality().equals(other.proxyGroups, _this.proxyGroups)&&const DeepCollectionEquality().equals(other.addedRules, _this.addedRules)&&(identical(other.script, _this.script) || other.script == _this.script)&&const DeepCollectionEquality().equals(other.customProxies, _this.customProxies)&&(identical(other.overrideDns, _this.overrideDns) || other.overrideDns == _this.overrideDns)&&(identical(other.dns, _this.dns) || other.dns == _this.dns)&&const DeepCollectionEquality().equals(other.dnsOverrideKeys, _this.dnsOverrideKeys)&&const DeepCollectionEquality().equals(other.clashProviders, _this.clashProviders)&&const DeepCollectionEquality().equals(other.profileProviders, _this.profileProviders)&&(identical(other.matchTarget, _this.matchTarget) || other.matchTarget == _this.matchTarget));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SetupState&&(identical(other.profileId, _this.profileId) || other.profileId == _this.profileId)&&(identical(other.profileLastUpdateDate, _this.profileLastUpdateDate) || other.profileLastUpdateDate == _this.profileLastUpdateDate)&&(identical(other.overwriteType, _this.overwriteType) || other.overwriteType == _this.overwriteType)&&const DeepCollectionEquality().equals(other.rules, _this.rules)&&const DeepCollectionEquality().equals(other.proxyGroups, _this.proxyGroups)&&const DeepCollectionEquality().equals(other.addedRules, _this.addedRules)&&(identical(other.script, _this.script) || other.script == _this.script)&&const DeepCollectionEquality().equals(other.customProxies, _this.customProxies)&&(identical(other.overrideDns, _this.overrideDns) || other.overrideDns == _this.overrideDns)&&(identical(other.dns, _this.dns) || other.dns == _this.dns)&&const DeepCollectionEquality().equals(other.dnsOverrideKeys, _this.dnsOverrideKeys)&&(identical(other.useProfileSettings, _this.useProfileSettings) || other.useProfileSettings == _this.useProfileSettings)&&const DeepCollectionEquality().equals(other.clashProviders, _this.clashProviders)&&const DeepCollectionEquality().equals(other.profileProviders, _this.profileProviders)&&(identical(other.matchTarget, _this.matchTarget) || other.matchTarget == _this.matchTarget));
 }
 
 
 @override
 int get hashCode {
   final _this = this as SetupState;
-  return Object.hash(runtimeType,_this.profileId,_this.profileLastUpdateDate,_this.overwriteType,const DeepCollectionEquality().hash(_this.rules),const DeepCollectionEquality().hash(_this.proxyGroups),const DeepCollectionEquality().hash(_this.addedRules),_this.script,const DeepCollectionEquality().hash(_this.customProxies),_this.overrideDns,_this.dns,const DeepCollectionEquality().hash(_this.dnsOverrideKeys),const DeepCollectionEquality().hash(_this.clashProviders),const DeepCollectionEquality().hash(_this.profileProviders),_this.matchTarget);
+  return Object.hash(runtimeType,_this.profileId,_this.profileLastUpdateDate,_this.overwriteType,const DeepCollectionEquality().hash(_this.rules),const DeepCollectionEquality().hash(_this.proxyGroups),const DeepCollectionEquality().hash(_this.addedRules),_this.script,const DeepCollectionEquality().hash(_this.customProxies),_this.overrideDns,_this.dns,const DeepCollectionEquality().hash(_this.dnsOverrideKeys),_this.useProfileSettings,const DeepCollectionEquality().hash(_this.clashProviders),const DeepCollectionEquality().hash(_this.profileProviders),_this.matchTarget);
 }
 
 @override
 String toString() {
   final _this = this as SetupState;
-  return 'SetupState(profileId: ${_this.profileId}, profileLastUpdateDate: ${_this.profileLastUpdateDate}, overwriteType: ${_this.overwriteType}, rules: ${_this.rules}, proxyGroups: ${_this.proxyGroups}, addedRules: ${_this.addedRules}, script: ${_this.script}, customProxies: ${_this.customProxies}, overrideDns: ${_this.overrideDns}, dns: ${_this.dns}, dnsOverrideKeys: ${_this.dnsOverrideKeys}, clashProviders: ${_this.clashProviders}, profileProviders: ${_this.profileProviders}, matchTarget: ${_this.matchTarget})';
+  return 'SetupState(profileId: ${_this.profileId}, profileLastUpdateDate: ${_this.profileLastUpdateDate}, overwriteType: ${_this.overwriteType}, rules: ${_this.rules}, proxyGroups: ${_this.proxyGroups}, addedRules: ${_this.addedRules}, script: ${_this.script}, customProxies: ${_this.customProxies}, overrideDns: ${_this.overrideDns}, dns: ${_this.dns}, dnsOverrideKeys: ${_this.dnsOverrideKeys}, useProfileSettings: ${_this.useProfileSettings}, clashProviders: ${_this.clashProviders}, profileProviders: ${_this.profileProviders}, matchTarget: ${_this.matchTarget})';
 }
 
 
@@ -9764,7 +9764,7 @@ abstract mixin class $SetupStateCopyWith<$Res>  {
   factory $SetupStateCopyWith(SetupState value, $Res Function(SetupState) _then) = _$SetupStateCopyWithImpl;
 @useResult
 $Res call({
- int? profileId, int? profileLastUpdateDate, OverwriteType overwriteType, List<Rule> rules, List<ProxyGroup> proxyGroups, List<Rule> addedRules, Script? script, List<CustomProxy> customProxies, bool overrideDns, Dns dns, Set<DnsOverrideKey> dnsOverrideKeys, List<ClashProvider> clashProviders, Map<String, int> profileProviders, String? matchTarget
+ int? profileId, int? profileLastUpdateDate, OverwriteType overwriteType, List<Rule> rules, List<ProxyGroup> proxyGroups, List<Rule> addedRules, Script? script, List<CustomProxy> customProxies, bool overrideDns, Dns dns, Set<DnsOverrideKey> dnsOverrideKeys, bool useProfileSettings, List<ClashProvider> clashProviders, Map<String, int> profileProviders, String? matchTarget
 });
 
 
@@ -9781,7 +9781,7 @@ class _$SetupStateCopyWithImpl<$Res>
 
 /// Create a copy of SetupState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? profileId = freezed,Object? profileLastUpdateDate = freezed,Object? overwriteType = null,Object? rules = null,Object? proxyGroups = null,Object? addedRules = null,Object? script = freezed,Object? customProxies = null,Object? overrideDns = null,Object? dns = null,Object? dnsOverrideKeys = null,Object? clashProviders = null,Object? profileProviders = null,Object? matchTarget = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? profileId = freezed,Object? profileLastUpdateDate = freezed,Object? overwriteType = null,Object? rules = null,Object? proxyGroups = null,Object? addedRules = null,Object? script = freezed,Object? customProxies = null,Object? overrideDns = null,Object? dns = null,Object? dnsOverrideKeys = null,Object? useProfileSettings = null,Object? clashProviders = null,Object? profileProviders = null,Object? matchTarget = freezed,}) {
   return _then(SetupState(
 profileId: freezed == profileId ? _self.profileId : profileId // ignore: cast_nullable_to_non_nullable
 as int?,profileLastUpdateDate: freezed == profileLastUpdateDate ? _self.profileLastUpdateDate : profileLastUpdateDate // ignore: cast_nullable_to_non_nullable
@@ -9794,7 +9794,8 @@ as Script?,customProxies: null == customProxies ? _self.customProxies : customPr
 as List<CustomProxy>,overrideDns: null == overrideDns ? _self.overrideDns : overrideDns // ignore: cast_nullable_to_non_nullable
 as bool,dns: null == dns ? _self.dns : dns // ignore: cast_nullable_to_non_nullable
 as Dns,dnsOverrideKeys: null == dnsOverrideKeys ? _self.dnsOverrideKeys : dnsOverrideKeys // ignore: cast_nullable_to_non_nullable
-as Set<DnsOverrideKey>,clashProviders: null == clashProviders ? _self.clashProviders : clashProviders // ignore: cast_nullable_to_non_nullable
+as Set<DnsOverrideKey>,useProfileSettings: null == useProfileSettings ? _self.useProfileSettings : useProfileSettings // ignore: cast_nullable_to_non_nullable
+as bool,clashProviders: null == clashProviders ? _self.clashProviders : clashProviders // ignore: cast_nullable_to_non_nullable
 as List<ClashProvider>,profileProviders: null == profileProviders ? _self.profileProviders : profileProviders // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,matchTarget: freezed == matchTarget ? _self.matchTarget : matchTarget // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -9903,10 +9904,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  bool useProfileSettings,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SetupState() when $default != null:
-return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
+return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.useProfileSettings,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
   return orElse();
 
 }
@@ -9924,10 +9925,10 @@ return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  bool useProfileSettings,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)  $default,) {final _that = this;
 switch (_that) {
 case _SetupState():
-return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
+return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.useProfileSettings,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -9944,10 +9945,10 @@ return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? profileId,  int? profileLastUpdateDate,  OverwriteType overwriteType,  List<Rule> rules,  List<ProxyGroup> proxyGroups,  List<Rule> addedRules,  Script? script,  List<CustomProxy> customProxies,  bool overrideDns,  Dns dns,  Set<DnsOverrideKey> dnsOverrideKeys,  bool useProfileSettings,  List<ClashProvider> clashProviders,  Map<String, int> profileProviders,  String? matchTarget)?  $default,) {final _that = this;
 switch (_that) {
 case _SetupState() when $default != null:
-return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
+return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,_that.rules,_that.proxyGroups,_that.addedRules,_that.script,_that.customProxies,_that.overrideDns,_that.dns,_that.dnsOverrideKeys,_that.useProfileSettings,_that.clashProviders,_that.profileProviders,_that.matchTarget);case _:
   return null;
 
 }
@@ -9959,7 +9960,7 @@ return $default(_that.profileId,_that.profileLastUpdateDate,_that.overwriteType,
 
 
 class _SetupState implements SetupState {
-  const _SetupState({required this.profileId, required this.profileLastUpdateDate, required this.overwriteType, required  List<Rule> rules, required  List<ProxyGroup> proxyGroups, required  List<Rule> addedRules, required this.script,  List<CustomProxy> customProxies = const [], required this.overrideDns, required this.dns, required  Set<DnsOverrideKey> dnsOverrideKeys,  List<ClashProvider> clashProviders = const [],  Map<String, int> profileProviders = const {}, this.matchTarget}): _rules = rules,_proxyGroups = proxyGroups,_addedRules = addedRules,_customProxies = customProxies,_dnsOverrideKeys = dnsOverrideKeys,_clashProviders = clashProviders,_profileProviders = profileProviders;
+  const _SetupState({required this.profileId, required this.profileLastUpdateDate, required this.overwriteType, required  List<Rule> rules, required  List<ProxyGroup> proxyGroups, required  List<Rule> addedRules, required this.script,  List<CustomProxy> customProxies = const [], required this.overrideDns, required this.dns, required  Set<DnsOverrideKey> dnsOverrideKeys, this.useProfileSettings = false,  List<ClashProvider> clashProviders = const [],  Map<String, int> profileProviders = const {}, this.matchTarget}): _rules = rules,_proxyGroups = proxyGroups,_addedRules = addedRules,_customProxies = customProxies,_dnsOverrideKeys = dnsOverrideKeys,_clashProviders = clashProviders,_profileProviders = profileProviders;
   
 
 @override final  int? profileId;
@@ -10003,6 +10004,7 @@ class _SetupState implements SetupState {
   return EqualUnmodifiableSetView(_dnsOverrideKeys);
 }
 
+@override@JsonKey() final  bool useProfileSettings;
  final  List<ClashProvider> _clashProviders;
 @override@JsonKey() List<ClashProvider> get clashProviders {
   if (_clashProviders is EqualUnmodifiableListView) return _clashProviders;
@@ -10029,18 +10031,18 @@ _$SetupStateCopyWith<_SetupState> get copyWith => __$SetupStateCopyWithImpl<_Set
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SetupState&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.profileLastUpdateDate, profileLastUpdateDate) || other.profileLastUpdateDate == profileLastUpdateDate)&&(identical(other.overwriteType, overwriteType) || other.overwriteType == overwriteType)&&const DeepCollectionEquality().equals(other.rules, _rules)&&const DeepCollectionEquality().equals(other.proxyGroups, _proxyGroups)&&const DeepCollectionEquality().equals(other.addedRules, _addedRules)&&(identical(other.script, script) || other.script == script)&&const DeepCollectionEquality().equals(other.customProxies, _customProxies)&&(identical(other.overrideDns, overrideDns) || other.overrideDns == overrideDns)&&(identical(other.dns, dns) || other.dns == dns)&&const DeepCollectionEquality().equals(other.dnsOverrideKeys, _dnsOverrideKeys)&&const DeepCollectionEquality().equals(other.clashProviders, _clashProviders)&&const DeepCollectionEquality().equals(other.profileProviders, _profileProviders)&&(identical(other.matchTarget, matchTarget) || other.matchTarget == matchTarget));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SetupState&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.profileLastUpdateDate, profileLastUpdateDate) || other.profileLastUpdateDate == profileLastUpdateDate)&&(identical(other.overwriteType, overwriteType) || other.overwriteType == overwriteType)&&const DeepCollectionEquality().equals(other.rules, _rules)&&const DeepCollectionEquality().equals(other.proxyGroups, _proxyGroups)&&const DeepCollectionEquality().equals(other.addedRules, _addedRules)&&(identical(other.script, script) || other.script == script)&&const DeepCollectionEquality().equals(other.customProxies, _customProxies)&&(identical(other.overrideDns, overrideDns) || other.overrideDns == overrideDns)&&(identical(other.dns, dns) || other.dns == dns)&&const DeepCollectionEquality().equals(other.dnsOverrideKeys, _dnsOverrideKeys)&&(identical(other.useProfileSettings, useProfileSettings) || other.useProfileSettings == useProfileSettings)&&const DeepCollectionEquality().equals(other.clashProviders, _clashProviders)&&const DeepCollectionEquality().equals(other.profileProviders, _profileProviders)&&(identical(other.matchTarget, matchTarget) || other.matchTarget == matchTarget));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,profileId,profileLastUpdateDate,overwriteType,const DeepCollectionEquality().hash(_rules),const DeepCollectionEquality().hash(_proxyGroups),const DeepCollectionEquality().hash(_addedRules),script,const DeepCollectionEquality().hash(_customProxies),overrideDns,dns,const DeepCollectionEquality().hash(_dnsOverrideKeys),const DeepCollectionEquality().hash(_clashProviders),const DeepCollectionEquality().hash(_profileProviders),matchTarget);
+    return Object.hash(runtimeType,profileId,profileLastUpdateDate,overwriteType,const DeepCollectionEquality().hash(_rules),const DeepCollectionEquality().hash(_proxyGroups),const DeepCollectionEquality().hash(_addedRules),script,const DeepCollectionEquality().hash(_customProxies),overrideDns,dns,const DeepCollectionEquality().hash(_dnsOverrideKeys),useProfileSettings,const DeepCollectionEquality().hash(_clashProviders),const DeepCollectionEquality().hash(_profileProviders),matchTarget);
 }
 
 @override
 String toString() {
-    return 'SetupState(profileId: $profileId, profileLastUpdateDate: $profileLastUpdateDate, overwriteType: $overwriteType, rules: $rules, proxyGroups: $proxyGroups, addedRules: $addedRules, script: $script, customProxies: $customProxies, overrideDns: $overrideDns, dns: $dns, dnsOverrideKeys: $dnsOverrideKeys, clashProviders: $clashProviders, profileProviders: $profileProviders, matchTarget: $matchTarget)';
+    return 'SetupState(profileId: $profileId, profileLastUpdateDate: $profileLastUpdateDate, overwriteType: $overwriteType, rules: $rules, proxyGroups: $proxyGroups, addedRules: $addedRules, script: $script, customProxies: $customProxies, overrideDns: $overrideDns, dns: $dns, dnsOverrideKeys: $dnsOverrideKeys, useProfileSettings: $useProfileSettings, clashProviders: $clashProviders, profileProviders: $profileProviders, matchTarget: $matchTarget)';
 }
 
 
@@ -10051,7 +10053,7 @@ abstract mixin class _$SetupStateCopyWith<$Res> implements $SetupStateCopyWith<$
   factory _$SetupStateCopyWith(_SetupState value, $Res Function(_SetupState) _then) = __$SetupStateCopyWithImpl;
 @override @useResult
 $Res call({
- int? profileId, int? profileLastUpdateDate, OverwriteType overwriteType, List<Rule> rules, List<ProxyGroup> proxyGroups, List<Rule> addedRules, Script? script, List<CustomProxy> customProxies, bool overrideDns, Dns dns, Set<DnsOverrideKey> dnsOverrideKeys, List<ClashProvider> clashProviders, Map<String, int> profileProviders, String? matchTarget
+ int? profileId, int? profileLastUpdateDate, OverwriteType overwriteType, List<Rule> rules, List<ProxyGroup> proxyGroups, List<Rule> addedRules, Script? script, List<CustomProxy> customProxies, bool overrideDns, Dns dns, Set<DnsOverrideKey> dnsOverrideKeys, bool useProfileSettings, List<ClashProvider> clashProviders, Map<String, int> profileProviders, String? matchTarget
 });
 
 
@@ -10068,7 +10070,7 @@ class __$SetupStateCopyWithImpl<$Res>
 
 /// Create a copy of SetupState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? profileId = freezed,Object? profileLastUpdateDate = freezed,Object? overwriteType = null,Object? rules = null,Object? proxyGroups = null,Object? addedRules = null,Object? script = freezed,Object? customProxies = null,Object? overrideDns = null,Object? dns = null,Object? dnsOverrideKeys = null,Object? clashProviders = null,Object? profileProviders = null,Object? matchTarget = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? profileId = freezed,Object? profileLastUpdateDate = freezed,Object? overwriteType = null,Object? rules = null,Object? proxyGroups = null,Object? addedRules = null,Object? script = freezed,Object? customProxies = null,Object? overrideDns = null,Object? dns = null,Object? dnsOverrideKeys = null,Object? useProfileSettings = null,Object? clashProviders = null,Object? profileProviders = null,Object? matchTarget = freezed,}) {
   return _then(_SetupState(
 profileId: freezed == profileId ? _self.profileId : profileId // ignore: cast_nullable_to_non_nullable
 as int?,profileLastUpdateDate: freezed == profileLastUpdateDate ? _self.profileLastUpdateDate : profileLastUpdateDate // ignore: cast_nullable_to_non_nullable
@@ -10081,7 +10083,8 @@ as Script?,customProxies: null == customProxies ? _self._customProxies : customP
 as List<CustomProxy>,overrideDns: null == overrideDns ? _self.overrideDns : overrideDns // ignore: cast_nullable_to_non_nullable
 as bool,dns: null == dns ? _self.dns : dns // ignore: cast_nullable_to_non_nullable
 as Dns,dnsOverrideKeys: null == dnsOverrideKeys ? _self._dnsOverrideKeys : dnsOverrideKeys // ignore: cast_nullable_to_non_nullable
-as Set<DnsOverrideKey>,clashProviders: null == clashProviders ? _self._clashProviders : clashProviders // ignore: cast_nullable_to_non_nullable
+as Set<DnsOverrideKey>,useProfileSettings: null == useProfileSettings ? _self.useProfileSettings : useProfileSettings // ignore: cast_nullable_to_non_nullable
+as bool,clashProviders: null == clashProviders ? _self._clashProviders : clashProviders // ignore: cast_nullable_to_non_nullable
 as List<ClashProvider>,profileProviders: null == profileProviders ? _self._profileProviders : profileProviders // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,matchTarget: freezed == matchTarget ? _self.matchTarget : matchTarget // ignore: cast_nullable_to_non_nullable
 as String?,

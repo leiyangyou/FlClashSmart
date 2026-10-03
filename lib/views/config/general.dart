@@ -409,13 +409,6 @@ class GeneralView extends ConsumerWidget {
         select: (state) => state.ipv6,
         update: (state, value) => state.copyWith(ipv6: value),
       ),
-      ConfigToggleItem(
-        title: (l) => l.useProfileSettings,
-        subtitle: (l) => l.useProfileSettingsDesc,
-        selector: useProfileSettingsProvider,
-        onChanged: (ref, value) =>
-            ref.read(useProfileSettingsProvider.notifier).value = value,
-      ),
       const HostsItem(),
       ConfigToggleItem(
         title: (l) => l.appendSystemDns,

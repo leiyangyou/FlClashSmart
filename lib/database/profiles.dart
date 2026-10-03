@@ -21,6 +21,9 @@ class Profiles extends Table {
 
   TextColumn get matchTarget => text().nullable()();
 
+  BoolColumn get useProfileSettings =>
+      boolean().withDefault(const Constant(false))();
+
   IntColumn get autoUpdateDurationMillis => integer()();
 
   TextColumn get subscriptionInfo =>
@@ -122,6 +125,7 @@ extension RawProfilExt on RawProfile {
       overwriteType: overwriteType,
       scriptId: scriptId,
       matchTarget: matchTarget,
+      useProfileSettings: useProfileSettings,
       order: order,
     );
   }
@@ -143,6 +147,7 @@ extension ProfilesCompanionExt on Profile {
       overwriteType: overwriteType,
       scriptId: Value(scriptId),
       matchTarget: Value(matchTarget),
+      useProfileSettings: Value(useProfileSettings),
       order: Value(order ?? this.order),
     );
   }

@@ -78,15 +78,6 @@ class OverrideNtp extends _$OverrideNtp with AutoDisposeNotifierMixin {
 }
 
 @riverpod
-class UseProfileSettings extends _$UseProfileSettings
-    with AutoDisposeNotifierMixin {
-  @override
-  bool build() {
-    return false;
-  }
-}
-
-@riverpod
 class HotKeyActions extends _$HotKeyActions with AutoDisposeNotifierMixin {
   @override
   List<HotKeyAction> build() {
@@ -131,7 +122,6 @@ Config _config(Ref ref) {
   final davProps = ref.watch(davSettingProvider);
   final overrideDns = ref.watch(overrideDnsProvider);
   final overrideNtp = ref.watch(overrideNtpProvider);
-  final useProfileSettings = ref.watch(useProfileSettingsProvider);
   final hotKeyActions = ref.watch(hotKeyActionsProvider);
   final proxiesStyleProps = ref.watch(proxiesStyleSettingProvider);
   final patchClashConfig = ref.watch(patchClashConfigProvider);
@@ -146,7 +136,6 @@ Config _config(Ref ref) {
     davProps: davProps,
     overrideDns: overrideDns,
     overrideNtp: overrideNtp,
-    useProfileSettings: useProfileSettings,
     hotKeyActions: hotKeyActions,
     proxiesStyleProps: proxiesStyleProps,
     patchClashConfig: patchClashConfig,
@@ -164,8 +153,6 @@ void writeConfig(Ref ref, Config config) {
   ref.read(davSettingProvider.notifier).value = config.davProps;
   ref.read(overrideDnsProvider.notifier).value = config.overrideDns;
   ref.read(overrideNtpProvider.notifier).value = config.overrideNtp;
-  ref.read(useProfileSettingsProvider.notifier).value =
-      config.useProfileSettings;
   ref.read(hotKeyActionsProvider.notifier).value = config.hotKeyActions;
   ref.read(proxiesStyleSettingProvider.notifier).value =
       config.proxiesStyleProps;
@@ -186,9 +173,6 @@ List<Override> buildConfigOverrides(Config config) {
     davSettingProvider.overrideWithBuild((_, _) => config.davProps),
     overrideDnsProvider.overrideWithBuild((_, _) => config.overrideDns),
     overrideNtpProvider.overrideWithBuild((_, _) => config.overrideNtp),
-    useProfileSettingsProvider.overrideWithBuild(
-      (_, _) => config.useProfileSettings,
-    ),
     hotKeyActionsProvider.overrideWithBuild((_, _) => config.hotKeyActions),
     proxiesStyleSettingProvider.overrideWithBuild(
       (_, _) => config.proxiesStyleProps,

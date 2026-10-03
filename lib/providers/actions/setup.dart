@@ -510,7 +510,8 @@ class SetupAction extends _$SetupAction {
 
   /// A profile's TUN is applied as stated, so refused consent fails the setup.
   void _ensureProfileTunAuthorized(ProfileOwnedConfig profileOwned) {
-    if (profileOwned.tunEnable(false) &&
+    if (coreCreatesTun &&
+        profileOwned.tunEnable(false) &&
         !ref.read(safeModeProvider) &&
         ref.read(authorizedTunEnableProvider) ==
             TunAuthorizationState.unauthorized) {
@@ -518,10 +519,36 @@ class SetupAction extends _$SetupAction {
     }
   }
 
+  void _ensureProfilePortsUsable(
+    ProfileOwnedConfig profileOwned,
+    PatchClashConfig patchConfig,
+  ) {
+    final mixedPort = profileOwned.undialableMixedPort;
+    if (mixedPort != null) {
+      throw MessageException(
+        currentAppLocalizations.profileMixedPortUndialable(mixedPort),
+      );
+    }
+    final collision = profileOwned.inboundPortCollision(patchConfig);
+    if (collision != null) {
+      throw MessageException(
+        currentAppLocalizations.profilePortCollision(
+          collision.first,
+          collision.second,
+          collision.port,
+        ),
+      );
+    }
+  }
+
   @protected
   Future<AuthorizeCode> authorizeCore() {
     return system.authorizeCore();
   }
+
+  /// The core skips the config's `tun` on Android (core/common.go).
+  @protected
+  bool get coreCreatesTun => !system.isAndroid;
 
   @visibleForTesting
   Future<bool> requestAdmin(bool enableTun) async {
@@ -595,6 +622,7 @@ class SetupAction extends _$SetupAction {
         patchConfig: _effectivePatchConfig(patchConfig),
       );
       _ensureProfileTunAuthorized(realProfile.profileOwned);
+      _ensureProfilePortsUsable(realProfile.profileOwned, patchConfig);
       return realProfile;
     }, title: 'build profile');
     // The profile's own tun.enable decides consent, so it is built first.

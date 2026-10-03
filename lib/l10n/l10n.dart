@@ -6522,6 +6522,26 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `The profile sets mixed-port to {port}, which FlClash cannot connect to`
+  String profileMixedPortUndialable(Object port) {
+    return Intl.message(
+      'The profile sets mixed-port to $port, which FlClash cannot connect to',
+      name: 'profileMixedPortUndialable',
+      desc: '',
+      args: [port],
+    );
+  }
+
+  /// `{first} and {second} both use port {port}, so the core would start only {first}`
+  String profilePortCollision(Object first, Object second, Object port) {
+    return Intl.message(
+      '$first and $second both use port $port, so the core would start only $first',
+      name: 'profilePortCollision',
+      desc: '',
+      args: [first, second, port],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

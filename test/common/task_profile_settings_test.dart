@@ -45,6 +45,7 @@ Map<String, dynamic> _fullProfile() => {
   'profile': {'store-selected': true},
   'hosts': {'profile.local': '10.0.0.1'},
   'rules': ['MATCH,DIRECT'],
+  'geodata-loader': 'standard',
 };
 
 const _patchConfig = PatchClashConfig(
@@ -131,17 +132,84 @@ void main() {
   });
 
   group('with the toggle on', () {
-    test('the profile keeps every key it states verbatim', () async {
+    test('the profile keeps every key the app writes verbatim', () async {
       final profile = _fullProfile();
       final result = await _build(profile, useProfileSettings: true);
       final config = loadYaml(result.yaml) as YamlMap;
+      final off = loadYaml((await _build(profile)).yaml) as YamlMap;
       final stated = profile.keys.toSet().difference(overwriteKeys);
+      final appWritten = (loadYaml(_golden('empty_profile')) as YamlMap).keys
+          .cast<String>()
+          .toSet()
+          .difference(overwriteKeys);
 
+      expect(stated, containsAll(appWritten));
       expect(result.profileOwned.keys, stated);
       for (final key in stated) {
         expect(jsonDecode(jsonEncode(config[key])), profile[key], reason: key);
+        expect(
+          jsonDecode(jsonEncode(off[key])),
+          isNot(profile[key]),
+          reason: '$key: the fixture must differ from the app\'s value',
+        );
       }
     });
+
+    for (final useProfileSettings in [false, true]) {
+      test('provider paths are confined and sniffer ports normalised, '
+          'toggle ${useProfileSettings ? 'on' : 'off'}', () async {
+        // Decoded like the core's reply, so nested values are dynamic.
+        final config = await _config(
+          jsonDecode(
+            jsonEncode({
+              'proxy-providers': {
+                'remote': {
+                  'type': 'http',
+                  'url': 'https://profile.example/proxies.yaml',
+                  'path': '/etc/passwd',
+                },
+                'local': {'type': 'file', 'path': '/etc/passwd'},
+              },
+              'rule-providers': {
+                'remote': {
+                  'type': 'http',
+                  'url': 'https://profile.example/rules.yaml',
+                  'path': '/etc/passwd',
+                },
+              },
+              'sniffer': {
+                'sniff': {
+                  'HTTP': {
+                    'ports': [80, '8080-8880'],
+                  },
+                  'TLS': {
+                    'ports': [443],
+                  },
+                },
+              },
+            }),
+          ),
+          useProfileSettings: useProfileSettings,
+        );
+
+        for (final (section, type, name) in [
+          ('proxy-providers', proxiesProviderDirectoryName, 'remote'),
+          ('proxy-providers', proxiesProviderDirectoryName, 'local'),
+          ('rule-providers', rulesProviderDirectoryName, 'remote'),
+        ]) {
+          expect(
+            config[section][name]['path'],
+            startsWith('/profiles/$providersDirectoryName/3/$type/'),
+            reason: '$section.$name',
+          );
+        }
+        expect(config['sniffer']['sniff']['HTTP']['ports'], [
+          '80',
+          '8080-8880',
+        ]);
+        expect(config['sniffer']['sniff']['TLS']['ports'], ['443']);
+      });
+    }
 
     test('the overwrite keys are still the app\'s', () async {
       final config = await _config(_fullProfile());

@@ -786,5 +786,7 @@
   "policyPriority": "Приоритет политики",
   "useProfileSettings": "Использовать настройки профиля",
   "useProfileSettingsDesc": "При включении все настройки, заданные в самом профиле, включая порты, TUN и DNS, имеют приоритет над настройками приложения; ваши правки перезаписи по-прежнему применяются",
-  "profileTunUnauthorized": "Профиль включает TUN, но FlClash не получил разрешения на его создание"
+  "profileTunUnauthorized": "Профиль включает TUN, но FlClash не получил разрешения на его создание",
+  "profileMixedPortUndialable": "Профиль задаёт mixed-port {port}, к которому FlClash не может подключиться",
+  "profilePortCollision": "{first} и {second} используют один порт {port}, поэтому ядро запустит только {first}"
 }

@@ -786,5 +786,7 @@
   "policyPriority": "Policy priority",
   "useProfileSettings": "Use my profile settings",
   "useProfileSettingsDesc": "When enabled, every setting the profile states itself, including ports, TUN and DNS, takes precedence over the app's; your overwrite edits still apply",
-  "profileTunUnauthorized": "The profile turns on TUN, but FlClash was not authorized to create it"
+  "profileTunUnauthorized": "The profile turns on TUN, but FlClash was not authorized to create it",
+  "profileMixedPortUndialable": "The profile sets mixed-port to {port}, which FlClash cannot connect to",
+  "profilePortCollision": "{first} and {second} both use port {port}, so the core would start only {first}"
 }

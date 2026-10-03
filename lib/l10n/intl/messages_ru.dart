@@ -129,31 +129,37 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m42(label) =>
       "Значение «${label}» должно быть от 1024 до 49151";
 
-  static String m43(label, profiles) =>
+  static String m43(port) =>
+      "Профиль задаёт mixed-port ${port}, к которому FlClash не может подключиться";
+
+  static String m44(first, second, port) =>
+      "${first} и ${second} используют один порт ${port}, поэтому ядро запустит только ${first}";
+
+  static String m45(label, profiles) =>
       "«${label}» всё ещё используется в пользовательских группах прокси или правилах профилей: ${profiles}. Сначала уберите его оттуда";
 
-  static String m44(profiles, label) =>
+  static String m46(profiles, label) =>
       "В подписках профилей ${profiles} уже есть «${label}», и после переименования они будут использовать его. Выберите другое имя";
 
-  static String m45(count) => "${count} прокси";
-
-  static String m46(count) =>
-      "${Intl.plural(count, one: '${count} правило', few: '${count} правила', many: '${count} правил', other: '${count} правила')}";
-
-  static String m47(appName) => "${appName} (Безопасный режим)";
+  static String m47(count) => "${count} прокси";
 
   static String m48(count) =>
+      "${Intl.plural(count, one: '${count} правило', few: '${count} правила', many: '${count} правил', other: '${count} правила')}";
+
+  static String m49(appName) => "${appName} (Безопасный режим)";
+
+  static String m50(count) =>
       "${Intl.plural(count, one: '${count} секунда', few: '${count} секунды', many: '${count} секунд', other: '${count} секунды')}";
 
-  static String m49(count) => "Выбрано: ${count}";
+  static String m51(count) => "Выбрано: ${count}";
 
-  static String m50(time) => "Проверено в ${time}";
+  static String m52(time) => "Проверено в ${time}";
 
-  static String m51(label) => "«${label}» — только одно значение";
+  static String m53(label) => "«${label}» — только одно значение";
 
-  static String m52(label) => "Значение «${label}» должно быть URL";
+  static String m54(label) => "Значение «${label}» должно быть URL";
 
-  static String m53(count) =>
+  static String m55(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -1114,9 +1120,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Профиль изменён. Отключить автообновление?",
     ),
+    "profileMixedPortUndialable": m43,
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите название профиля",
     ),
+    "profilePortCollision": m44,
     "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
       "Профиль включает TUN, но FlClash не получил разрешения на его создание",
     ),
@@ -1129,8 +1137,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "profiles": MessageLookupByLibrary.simpleMessage("Профили"),
     "profilesSort": MessageLookupByLibrary.simpleMessage("Сортировка профилей"),
     "project": MessageLookupByLibrary.simpleMessage("Проект"),
-    "providerInUse": m43,
-    "providerRenameShadowed": m44,
+    "providerInUse": m45,
+    "providerRenameShadowed": m46,
     "providerSourceSubscription": MessageLookupByLibrary.simpleMessage(
       "Подписка",
     ),
@@ -1139,7 +1147,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "providers": MessageLookupByLibrary.simpleMessage("Внешние ресурсы"),
     "proxies": MessageLookupByLibrary.simpleMessage("Прокси"),
-    "proxiesCount": m45,
+    "proxiesCount": m47,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Список прокси пуст"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
     "proxyDefinition": MessageLookupByLibrary.simpleMessage(
@@ -1378,10 +1386,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Набор правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
-    "rulesCount": m46,
+    "rulesCount": m48,
     "runTime": MessageLookupByLibrary.simpleMessage("Время работы"),
     "safeMode": MessageLookupByLibrary.simpleMessage("Безопасный режим"),
-    "safeModeAppTitle": m47,
+    "safeModeAppTitle": m49,
     "sampleRate": MessageLookupByLibrary.simpleMessage("Частота выборки"),
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
@@ -1394,7 +1402,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Поиск"),
     "seconds": MessageLookupByLibrary.simpleMessage("секунд"),
-    "secondsCount": m48,
+    "secondsCount": m50,
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selectProxies": MessageLookupByLibrary.simpleMessage("Выбрать прокси"),
     "selectProxyProviders": MessageLookupByLibrary.simpleMessage(
@@ -1410,13 +1418,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Выберите подправило",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m49,
+    "selectedCountTitle": m51,
     "server": MessageLookupByLibrary.simpleMessage("Сервер"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Доступен"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Проверить"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Проверить все"),
-    "serviceCheckedAt": m50,
+    "serviceCheckedAt": m52,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Скоро появится"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Недопустимый провайдер",
@@ -1457,7 +1465,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Запускаться без показа окна",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("По одному"),
-    "singleValueTip": m51,
+    "singleValueTip": m53,
     "size": MessageLookupByLibrary.simpleMessage("Размер"),
     "slide": MessageLookupByLibrary.simpleMessage("Сдвиг"),
     "smartOptions": MessageLookupByLibrary.simpleMessage("Smart"),
@@ -1566,7 +1574,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
-    "urlTip": m52,
+    "urlTip": m54,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("Модель LightGBM"),
     "useProfileSettings": MessageLookupByLibrary.simpleMessage(
@@ -1606,7 +1614,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "Также устанавливать системные часы; Android это игнорирует",
     ),
-    "yearsAgo": m53,
+    "yearsAgo": m55,
     "yes": MessageLookupByLibrary.simpleMessage("Да"),
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
   };

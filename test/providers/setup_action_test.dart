@@ -146,6 +146,15 @@ class TestAuthorizingSetupAction extends SetupAction {
   }
 }
 
+class _AndroidSetupAction extends TestAuthorizingSetupAction {
+  _AndroidSetupAction() {
+    authorizeResult = AuthorizeCode.error;
+  }
+
+  @override
+  bool get coreCreatesTun => false;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() {
@@ -1515,6 +1524,102 @@ void main() {
         expect(scoped.read(trayStateProvider).port, 17890);
       });
 
+      group('a profile port the app cannot run with fails the setup', () {
+        Future<List<String>> setupLog(
+          ProviderContainer scoped, {
+          required bool expectApplied,
+        }) async {
+          final printed = <String>[];
+          final original = debugPrint;
+          debugPrint = (message, {wrapWidth}) => printed.add('$message');
+          try {
+            await pushedConfigOf(scoped, expectApplied: expectApplied);
+          } finally {
+            debugPrint = original;
+          }
+          return printed;
+        }
+
+        _MockCoreHandlerInterface portCore(Map<String, int> ports) {
+          final core = fixtureCore('minimal');
+          when(() => core.getConfig(any())).thenAnswer(
+            (_) async => {
+              ...(coreReply('minimal', 'core.json') as Map<String, dynamic>),
+              ...ports,
+            },
+          );
+          when(
+            () => core.getProfileKeys(any()),
+          ).thenAnswer((_) async => {'proxies', 'rules', ...ports.keys});
+          return core;
+        }
+
+        test('a mixed-port of 0 names the key and leaves the app '
+            'dialling its own port', () async {
+          final scoped = scopedSetup(
+            portCore({'mixed-port': 0}),
+            useProfileSettings: true,
+          );
+          scoped.listen(proxyStateProvider, (_, _) {});
+          scoped.listen(trayStateProvider, (_, _) {});
+          scoped.listen(sharedStateProvider, (_, _) {});
+          scoped.read(runTimeProvider.notifier).value = 1;
+
+          final printed = await setupLog(scoped, expectApplied: false);
+
+          expect(
+            printed.where((line) => line.contains('mixed-port')),
+            isNotEmpty,
+          );
+          expect(scoped.read(proxyStateProvider).port, defaultMixedPort);
+          expect(scoped.read(trayStateProvider).port, defaultMixedPort);
+          expect(
+            scoped.read(sharedStateProvider).vpnOptions?.port,
+            defaultMixedPort,
+          );
+          expect(
+            FlClashHttpOverrides.findProxyForReader(
+              scoped.read,
+              Uri.parse('https://example.com'),
+            ),
+            'PROXY localhost:$defaultMixedPort',
+          );
+        });
+
+        test(
+          'a port that takes the app\'s mixed port names both keys',
+          () async {
+            final scoped = scopedSetup(
+              portCore({'port': defaultMixedPort}),
+              useProfileSettings: true,
+            );
+
+            final printed = await setupLog(scoped, expectApplied: false);
+
+            expect(
+              printed.where(
+                (line) =>
+                    line.contains('port and mixed-port') &&
+                    line.contains('$defaultMixedPort'),
+              ),
+              isNotEmpty,
+            );
+          },
+        );
+
+        test('ports apart from the app\'s set up as stated', () async {
+          final scoped = scopedSetup(
+            portCore({'port': 17891, 'socks-port': 0}),
+            useProfileSettings: true,
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+
+          expect(config['port'], 17891);
+          expect(config['mixed-port'], defaultMixedPort);
+        });
+      });
+
       group('TUN consent follows the effective tun.enable', () {
         Map<String, dynamic> tunReply(bool enable) => {
           ...(coreReply('minimal', 'core.json') as Map<String, dynamic>),
@@ -1568,6 +1673,20 @@ void main() {
             expect(config, isNot(contains('utun99')));
           },
         );
+
+        test('on Android a profile that turns TUN on still sets up, '
+            'its tun left to the core that ignores it', () async {
+          final scoped = scopedSetup(
+            tunCore(true),
+            useProfileSettings: true,
+            action: _AndroidSetupAction.new,
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+
+          expect(config['tun']['enable'], true);
+          expect(config['tun']['device'], 'utun99');
+        });
 
         test('a profile that turns TUN off never asks, '
             'whatever the app setting says', () async {

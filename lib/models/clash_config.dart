@@ -43,10 +43,41 @@ class ProfileOwnedConfig {
 
   Set<String> get keys => values.keys.toSet();
 
-  int mixedPort(int appMixedPort) => switch (values['mixed-port']) {
+  int mixedPort(int appMixedPort) => _port('mixed-port', appMixedPort);
+
+  int _port(String key, int appPort) => switch (values[key]) {
     final int port => port,
-    _ => appMixedPort,
+    _ => appPort,
   };
+
+  Object? get undialableMixedPort => switch (values['mixed-port']) {
+    null => null,
+    final int port when port > 0 && port <= 65535 => null,
+    final port => port,
+  };
+
+  /// In mihomo's bind order: it keeps the first and silently drops the other.
+  ({String first, String second, int port})? inboundPortCollision(
+    PatchClashConfig app,
+  ) {
+    final ports = [
+      ('port', _port('port', app.port)),
+      ('socks-port', _port('socks-port', app.socksPort)),
+      ('redir-port', _port('redir-port', app.redirPort)),
+      ('tproxy-port', _port('tproxy-port', app.tproxyPort)),
+      ('mixed-port', mixedPort(app.mixedPort)),
+    ];
+    for (final (i, (first, firstPort)) in ports.indexed) {
+      for (final (second, port) in ports.skip(i + 1)) {
+        if (port != 0 &&
+            port == firstPort &&
+            (values.containsKey(first) || values.containsKey(second))) {
+          return (first: first, second: second, port: port);
+        }
+      }
+    }
+    return null;
+  }
 
   bool tunEnable(bool appTunEnable) => switch (values['tun']) {
     final Map tun => tun['enable'] == true,

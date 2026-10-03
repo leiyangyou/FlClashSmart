@@ -762,6 +762,40 @@ void main() {
     expect(container.read(updateParamsProvider).authentication, isEmpty);
   });
 
+  test('shared state hands the VPN service the profile\'s port and '
+      'credentials when the profile owns them', () async {
+    await AppLocalizations.load(const Locale('en'));
+    container.listen(sharedStateProvider, (_, _) {});
+    VpnOptions vpnOptions() => container.read(sharedStateProvider).vpnOptions!;
+    expect(vpnOptions().port, defaultMixedPort);
+    expect(vpnOptions().systemProxy, true);
+
+    container
+        .read(profileOwnedProvider.notifier)
+        .value = const ProfileOwnedConfig({
+      'mixed-port': 17890,
+      'authentication': ['profile:secret'],
+    });
+    expect(vpnOptions().port, 17890);
+    expect(vpnOptions().systemProxy, false);
+
+    container
+        .read(networkSettingProvider.notifier)
+        .update(
+          (state) => state.copyWith(
+            authentication: const AuthenticationProps(
+              enable: true,
+              username: 'user',
+              password: 'pass',
+            ),
+          ),
+        );
+    container.read(profileOwnedProvider.notifier).value =
+        const ProfileOwnedConfig({'authentication': <String>[]});
+    expect(vpnOptions().port, defaultMixedPort);
+    expect(vpnOptions().systemProxy, true);
+  });
+
   test('shared state carries the notification stop action switch', () async {
     await AppLocalizations.load(const Locale('en'));
     container.listen(sharedStateProvider, (_, _) {});

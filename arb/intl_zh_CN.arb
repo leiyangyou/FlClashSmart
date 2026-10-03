@@ -788,5 +788,6 @@
   "useProfileSettingsDesc": "开启后，配置文件自身写明的所有设置（包括端口、TUN、DNS）优先于应用设置；你的覆写编辑仍会生效",
   "profileTunUnauthorized": "配置文件开启了 TUN，但 FlClash 未获得创建 TUN 的授权",
   "profileMixedPortUndialable": "配置文件将 mixed-port 设为 {port}，FlClash 无法连接该端口",
-  "profilePortCollision": "{first} 与 {second} 都使用端口 {port}，核心只会启动 {first}"
+  "profilePortCollision": "{first} 与 {second} 都使用端口 {port}，核心只会启动 {first}",
+  "profilePortTakesMixedPort": "配置文件的 {key} 占用了端口 {port}，但 FlClash 需要该端口提供 mixed 或 HTTP 代理；请修改 FlClash 的 mixed-port 或配置文件的 {key}"
 }

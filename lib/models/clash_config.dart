@@ -43,11 +43,12 @@ class ProfileOwnedConfig {
 
   Set<String> get keys => values.keys.toSet();
 
-  int mixedPort(int appMixedPort) => _port('mixed-port', appMixedPort);
+  int dialPort(int appMixedPort) =>
+      _dialable('mixed-port') ?? _dialable('port') ?? appMixedPort;
 
-  int _port(String key, int appPort) => switch (values[key]) {
-    final int port => port,
-    _ => appPort,
+  int? _dialable(String key) => switch (values[key]) {
+    final int port when port > 0 && port <= 65535 => port,
+    _ => null,
   };
 
   Object? get undialableMixedPort => switch (values['mixed-port']) {
@@ -56,27 +57,53 @@ class ProfileOwnedConfig {
     final port => port,
   };
 
-  /// In mihomo's bind order: it keeps the first and silently drops the other.
-  ({String first, String second, int port})? inboundPortCollision(
-    PatchClashConfig app,
-  ) {
-    final ports = [
-      ('port', _port('port', app.port)),
-      ('socks-port', _port('socks-port', app.socksPort)),
-      ('redir-port', _port('redir-port', app.redirPort)),
-      ('tproxy-port', _port('tproxy-port', app.tproxyPort)),
-      ('mixed-port', mixedPort(app.mixedPort)),
-    ];
+  /// mihomo's bind order: a later listener on a taken port is dropped.
+  static const _inboundPortKeys = [
+    'port',
+    'socks-port',
+    'redir-port',
+    'tproxy-port',
+    'mixed-port',
+  ];
+
+  Iterable<(String, int)> get _statedInboundPorts => [
+    for (final key in _inboundPortKeys)
+      if (values[key] case final int port when port != 0) (key, port),
+  ];
+
+  PatchClashConfig yieldInboundPorts(PatchClashConfig app) {
+    final stated = {for (final (_, port) in _statedInboundPorts) port};
+    int yielded(String key, int port) =>
+        !values.containsKey(key) && stated.contains(port) ? 0 : port;
+    return app.copyWith(
+      port: yielded('port', app.port),
+      socksPort: yielded('socks-port', app.socksPort),
+      redirPort: yielded('redir-port', app.redirPort),
+      tproxyPort: yielded('tproxy-port', app.tproxyPort),
+      mixedPort: yielded('mixed-port', app.mixedPort),
+    );
+  }
+
+  ({String first, String second, int port})? get inboundPortCollision {
+    final ports = _statedInboundPorts.toList();
     for (final (i, (first, firstPort)) in ports.indexed) {
       for (final (second, port) in ports.skip(i + 1)) {
-        if (port != 0 &&
-            port == firstPort &&
-            (values.containsKey(first) || values.containsKey(second))) {
+        if (port == firstPort) {
           return (first: first, second: second, port: port);
         }
       }
     }
     return null;
+  }
+
+  String? httplessListenerOnMixedPort(int appMixedPort) {
+    if (values.containsKey('mixed-port') || _dialable('port') != null) {
+      return null;
+    }
+    return [
+      for (final (key, port) in _statedInboundPorts)
+        if (port == appMixedPort) key,
+    ].firstOrNull;
   }
 
   bool tunEnable(bool appTunEnable) => switch (values['tun']) {

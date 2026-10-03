@@ -191,11 +191,12 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   write('port', 0);
   write('socks-port', 0);
   write('keep-alive-interval', realPatchConfig.keepAliveInterval);
-  write('mixed-port', realPatchConfig.mixedPort);
-  write('port', realPatchConfig.port);
-  write('socks-port', realPatchConfig.socksPort);
-  write('redir-port', realPatchConfig.redirPort);
-  write('tproxy-port', realPatchConfig.tproxyPort);
+  final inbound = profileOwned.yieldInboundPorts(realPatchConfig);
+  write('mixed-port', inbound.mixedPort);
+  write('port', inbound.port);
+  write('socks-port', inbound.socksPort);
+  write('redir-port', inbound.redirPort);
+  write('tproxy-port', inbound.tproxyPort);
   write('find-process-mode', realPatchConfig.findProcessMode.name);
   write('allow-lan', realPatchConfig.allowLan);
   // A profile-provided skip-auth-prefixes could silently exempt loopback from

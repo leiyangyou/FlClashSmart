@@ -17,6 +17,7 @@ import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -1655,10 +1656,10 @@ void main() {
         });
 
         test(
-          'a port that takes the app\'s mixed port names both keys',
+          'two ports the profile states on one number name both keys',
           () async {
             final scoped = scopedSetup(
-              portCore({'port': defaultMixedPort}),
+              portCore({'port': 17891, 'socks-port': 17891}),
               useProfileSettings: true,
             );
 
@@ -1667,25 +1668,193 @@ void main() {
             expect(
               printed.where(
                 (line) =>
-                    line.contains('port and mixed-port') &&
-                    line.contains('$defaultMixedPort'),
+                    line.contains('port and socks-port') &&
+                    line.contains('17891'),
               ),
               isNotEmpty,
             );
           },
         );
 
-        test('ports apart from the app\'s set up as stated', () async {
+        for (final key in ['socks-port', 'redir-port', 'tproxy-port']) {
+          test('a $key on the app\'s mixed port names both keys and what '
+              'to change, since nothing would serve HTTP', () async {
+            final scoped = scopedSetup(
+              portCore({key: defaultMixedPort}),
+              useProfileSettings: true,
+            );
+
+            final printed = await setupLog(scoped, expectApplied: false);
+
+            expect(
+              printed.where(
+                (line) =>
+                    line.contains(
+                      "The profile's $key takes port "
+                      '$defaultMixedPort',
+                    ) &&
+                    line.contains(
+                      "change FlClash's mixed-port or the "
+                      "profile's $key",
+                    ),
+              ),
+              isNotEmpty,
+            );
+          });
+        }
+      });
+
+      group('the app yields an inbound port the profile also states', () {
+        String? copiedProxyEnv;
+        setUp(() {
+          copiedProxyEnv = null;
+          final messenger =
+              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+          messenger.setMockMethodCallHandler(SystemChannels.platform, (
+            call,
+          ) async {
+            if (call.method == 'Clipboard.setData') {
+              copiedProxyEnv = (call.arguments as Map)['text'] as String;
+            }
+            return null;
+          });
+          addTearDown(
+            () => messenger.setMockMethodCallHandler(
+              SystemChannels.platform,
+              null,
+            ),
+          );
+        });
+
+        _MockCoreHandlerInterface portCore(Map<String, int> ports) {
+          final core = fixtureCore('minimal');
+          when(() => core.getConfig(any())).thenAnswer(
+            (_) async => {
+              ...(coreReply('minimal', 'core.json') as Map<String, dynamic>),
+              ...ports,
+            },
+          );
+          when(
+            () => core.getProfileKeys(any()),
+          ).thenAnswer((_) async => {'proxies', 'rules', ...ports.keys});
+          return core;
+        }
+
+        Future<
+          ({
+            ProviderContainer scoped,
+            YamlMap config,
+            Map<String, dynamic> payload,
+          })
+        >
+        setUpWith(
+          _MockCoreHandlerInterface core, {
+          bool useProfileSettings = true,
+          PatchClashConfig patchConfig = appPatchConfig,
+        }) async {
           final scoped = scopedSetup(
-            portCore({'port': 17891, 'socks-port': 0}),
-            useProfileSettings: true,
+            core,
+            useProfileSettings: useProfileSettings,
+            patchConfig: patchConfig,
+          );
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+          await scoped.read(setupActionProvider.notifier).updateConfig();
+          final payload =
+              (verify(() => core.updateConfig(captureAny())).captured.single
+                      as UpdateParams)
+                  .toJson();
+          return (scoped: scoped, config: config, payload: payload);
+        }
+
+        Future<void> expectDialled(ProviderContainer scoped, int port) async {
+          scoped.listen(proxyStateProvider, (_, _) {});
+          scoped.listen(trayStateProvider, (_, _) {});
+          scoped.listen(sharedStateProvider, (_, _) {});
+          scoped.read(runTimeProvider.notifier).value = 1;
+          await scoped.read(systemActionProvider.notifier).copyProxyEnv();
+
+          expect(scoped.read(proxyStateProvider).port, port);
+          expect(scoped.read(trayStateProvider).port, port);
+          expect(scoped.read(sharedStateProvider).vpnOptions?.port, port);
+          expect(
+            FlClashHttpOverrides.findProxyForReader(
+              scoped.read,
+              Uri.parse('https://example.com'),
+            ),
+            'PROXY localhost:$port',
+          );
+          expect(copiedProxyEnv, endsWith('http://127.0.0.1:$port'));
+        }
+
+        test('a legacy port on the app\'s mixed port sets up with the '
+            'profile\'s port serving and the app dialling it', () async {
+          final (:scoped, :config, :payload) = await setUpWith(
+            portCore({'port': defaultMixedPort}),
           );
 
-          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+          expect(config['port'], defaultMixedPort);
+          expect(config['mixed-port'], 0);
+          expect(payload['mixed-port'], 0);
+          await expectDialled(scoped, defaultMixedPort);
+        });
+
+        test('a legacy port apart from the app\'s mixed port is what the app '
+            'dials, the app\'s mixed port still listening', () async {
+          final (:scoped, :config, :payload) = await setUpWith(
+            portCore({'port': 17891}),
+          );
 
           expect(config['port'], 17891);
           expect(config['mixed-port'], defaultMixedPort);
+          expect(payload['mixed-port'], defaultMixedPort);
+          await expectDialled(scoped, 17891);
         });
+
+        test('the profile\'s mixed-port on the app\'s port takes it, the '
+            'app\'s port closing', () async {
+          final (:scoped, :config, :payload) = await setUpWith(
+            portCore({'mixed-port': 17890}),
+            patchConfig: appPatchConfig.copyWith(port: 17890),
+          );
+
+          expect(config['port'], 0);
+          expect(config['mixed-port'], 17890);
+          expect(payload['mixed-port'], isNull);
+          await expectDialled(scoped, 17890);
+        });
+
+        test('a socks-port apart from the app\'s mixed port leaves the app '
+            'dialling its own mixed port', () async {
+          final (:scoped, :config, :payload) = await setUpWith(
+            portCore({'socks-port': 17892}),
+          );
+
+          expect(config['socks-port'], 17892);
+          expect(config['mixed-port'], defaultMixedPort);
+          expect(payload['mixed-port'], defaultMixedPort);
+          await expectDialled(scoped, defaultMixedPort);
+        });
+
+        for (final ports in [
+          {'port': defaultMixedPort},
+          {'socks-port': defaultMixedPort},
+          {'mixed-port': 17890},
+        ]) {
+          test('with the flag off a profile stating $ports keeps the app\'s '
+              'ports', () async {
+            final (:scoped, :config, :payload) = await setUpWith(
+              portCore(ports),
+              useProfileSettings: false,
+              patchConfig: appPatchConfig.copyWith(port: 17890),
+            );
+
+            expect(config['port'], 17890);
+            expect(config['socks-port'], 0);
+            expect(config['mixed-port'], defaultMixedPort);
+            expect(payload['mixed-port'], defaultMixedPort);
+            await expectDialled(scoped, defaultMixedPort);
+          });
+        }
       });
 
       group('TUN consent follows the effective tun.enable', () {

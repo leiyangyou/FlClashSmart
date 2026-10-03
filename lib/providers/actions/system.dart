@@ -137,7 +137,7 @@ class SystemAction extends _$SystemAction {
   Future<void> copyProxyEnv() async {
     final port = ref
         .read(profileOwnedProvider)
-        .mixedPort(ref.read(patchClashConfigProvider).mixedPort);
+        .dialPort(ref.read(patchClashConfigProvider).mixedPort);
     await Clipboard.setData(
       ClipboardData(text: proxyEnvCommand(port, isWindows: system.isWindows)),
     );

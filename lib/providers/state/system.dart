@@ -47,7 +47,7 @@ TrayState trayState(Ref ref) {
 
   return TrayState(
     mode: clashConfig.mode,
-    port: profileOwned.mixedPort(clashConfig.mixedPort),
+    port: profileOwned.dialPort(clashConfig.mixedPort),
     autoLaunch: appSetting.autoLaunch,
     systemProxy: systemProxy,
     tunEnable: profileOwned.tunEnable(clashConfig.tunEnable),
@@ -219,7 +219,7 @@ SharedState sharedState(Ref ref) {
   final crashlytics = appSetting.crashlytics;
   final testUrl = appSetting.testUrl;
   final stack = clashConfig.stack;
-  final port = profileOwned.mixedPort(clashConfig.mixedPort);
+  final port = profileOwned.dialPort(clashConfig.mixedPort);
   return SharedState(
     currentProfileName: currentProfileName,
     onlyStatisticsProxy: onlyStatisticsProxy,

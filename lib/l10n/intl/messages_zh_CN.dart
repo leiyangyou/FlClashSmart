@@ -114,29 +114,32 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m44(first, second, port) =>
       "${first} 与 ${second} 都使用端口 ${port}，核心只会启动 ${first}";
 
-  static String m45(label, profiles) =>
+  static String m45(key, port) =>
+      "配置文件的 ${key} 占用了端口 ${port}，但 FlClash 需要该端口提供 mixed 或 HTTP 代理；请修改 FlClash 的 mixed-port 或配置文件的 ${key}";
+
+  static String m46(label, profiles) =>
       "${label} 仍被 ${profiles} 的自定义策略组或规则使用，请先在那里移除";
 
-  static String m46(profiles, label) =>
+  static String m47(profiles, label) =>
       "${profiles} 的订阅里已有 ${label}，改名后这些配置会改用订阅里的那个，请换一个名称";
 
-  static String m47(count) => "${count} 个代理";
+  static String m48(count) => "${count} 个代理";
 
-  static String m48(count) => "${count} 条规则";
+  static String m49(count) => "${count} 条规则";
 
-  static String m49(appName) => "${appName}（安全模式）";
+  static String m50(appName) => "${appName}（安全模式）";
 
-  static String m50(count) => "${count} 秒";
+  static String m51(count) => "${count} 秒";
 
-  static String m51(count) => "已选择 ${count} 项";
+  static String m52(count) => "已选择 ${count} 项";
 
-  static String m52(time) => "检测于 ${time}";
+  static String m53(time) => "检测于 ${time}";
 
-  static String m53(label) => "${label}只能是一项";
+  static String m54(label) => "${label}只能是一项";
 
-  static String m54(label) => "${label}必须为URL";
+  static String m55(label) => "${label}必须为URL";
 
-  static String m55(count) => "${count} 年前";
+  static String m56(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -813,6 +816,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "请输入配置名称",
     ),
     "profilePortCollision": m44,
+    "profilePortTakesMixedPort": m45,
     "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
       "配置文件开启了 TUN，但 FlClash 未获得创建 TUN 的授权",
     ),
@@ -825,13 +829,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "profiles": MessageLookupByLibrary.simpleMessage("配置"),
     "profilesSort": MessageLookupByLibrary.simpleMessage("配置排序"),
     "project": MessageLookupByLibrary.simpleMessage("项目"),
-    "providerInUse": m45,
-    "providerRenameShadowed": m46,
+    "providerInUse": m46,
+    "providerRenameShadowed": m47,
     "providerSourceSubscription": MessageLookupByLibrary.simpleMessage("订阅"),
     "providerUrlTip": MessageLookupByLibrary.simpleMessage("仅支持远程资源"),
     "providers": MessageLookupByLibrary.simpleMessage("外部资源"),
     "proxies": MessageLookupByLibrary.simpleMessage("代理"),
-    "proxiesCount": m47,
+    "proxiesCount": m48,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("代理为空"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("代理链"),
     "proxyDefinition": MessageLookupByLibrary.simpleMessage("完整配置"),
@@ -998,10 +1002,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("规则集"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("规则目标"),
     "rules": MessageLookupByLibrary.simpleMessage("规则"),
-    "rulesCount": m48,
+    "rulesCount": m49,
     "runTime": MessageLookupByLibrary.simpleMessage("启动时间"),
     "safeMode": MessageLookupByLibrary.simpleMessage("安全模式"),
-    "safeModeAppTitle": m49,
+    "safeModeAppTitle": m50,
     "sampleRate": MessageLookupByLibrary.simpleMessage("采样率"),
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("是否保存更改？"),
@@ -1012,7 +1016,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("滚动到已选"),
     "search": MessageLookupByLibrary.simpleMessage("搜索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
-    "secondsCount": m50,
+    "secondsCount": m51,
     "selectAll": MessageLookupByLibrary.simpleMessage("全选"),
     "selectProxies": MessageLookupByLibrary.simpleMessage("选择代理"),
     "selectProxyProviders": MessageLookupByLibrary.simpleMessage("选择代理集"),
@@ -1020,13 +1024,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectSplitStrategy": MessageLookupByLibrary.simpleMessage("请选择分流策略"),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("请选择子规则"),
     "selected": MessageLookupByLibrary.simpleMessage("已选择"),
-    "selectedCountTitle": m51,
+    "selectedCountTitle": m52,
     "server": MessageLookupByLibrary.simpleMessage("服务器"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("可用"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("已被封禁"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("检测"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("全部检测"),
-    "serviceCheckedAt": m52,
+    "serviceCheckedAt": m53,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("即将上线"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage("不允许的 ISP"),
     "serviceFailed": MessageLookupByLibrary.simpleMessage("检测失败"),
@@ -1051,7 +1055,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "silentLaunch": MessageLookupByLibrary.simpleMessage("静默启动"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage("启动时不显示窗口"),
     "singleAdd": MessageLookupByLibrary.simpleMessage("单条添加"),
-    "singleValueTip": m53,
+    "singleValueTip": m54,
     "size": MessageLookupByLibrary.simpleMessage("尺寸"),
     "slide": MessageLookupByLibrary.simpleMessage("滑动"),
     "smartOptions": MessageLookupByLibrary.simpleMessage("Smart 选项"),
@@ -1132,7 +1136,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("上传"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("通过URL获取配置文件"),
-    "urlTip": m54,
+    "urlTip": m55,
     "useHosts": MessageLookupByLibrary.simpleMessage("使用Hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM 模型"),
     "useProfileSettings": MessageLookupByLibrary.simpleMessage("使用配置文件设置"),
@@ -1158,7 +1162,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "同时设置系统时钟，Android上不生效",
     ),
-    "yearsAgo": m55,
+    "yearsAgo": m56,
     "yes": MessageLookupByLibrary.simpleMessage("是"),
     "zhCN": MessageLookupByLibrary.simpleMessage("中文简体"),
   };

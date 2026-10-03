@@ -254,11 +254,13 @@ class SetupAction extends _$SetupAction {
       }
       final networkSetting = ref.read(networkSettingProvider);
       final message = await _core.updateConfig(
-        _effectivePatchConfig(patchConfig).toUpdateParams(
-          routeMode: networkSetting.routeMode,
-          authentication: networkSetting.authentication.credentials,
-          profileOwnedKeys: profileOwned.keys,
-        ),
+        profileOwned
+            .yieldInboundPorts(_effectivePatchConfig(patchConfig))
+            .toUpdateParams(
+              routeMode: networkSetting.routeMode,
+              authentication: networkSetting.authentication.credentials,
+              profileOwnedKeys: profileOwned.keys,
+            ),
       );
       if (message.isNotEmpty) throw MessageException(message);
     });
@@ -529,13 +531,24 @@ class SetupAction extends _$SetupAction {
         currentAppLocalizations.profileMixedPortUndialable(mixedPort),
       );
     }
-    final collision = profileOwned.inboundPortCollision(patchConfig);
+    final collision = profileOwned.inboundPortCollision;
     if (collision != null) {
       throw MessageException(
         currentAppLocalizations.profilePortCollision(
           collision.first,
           collision.second,
           collision.port,
+        ),
+      );
+    }
+    final httpless = profileOwned.httplessListenerOnMixedPort(
+      patchConfig.mixedPort,
+    );
+    if (httpless != null) {
+      throw MessageException(
+        currentAppLocalizations.profilePortTakesMixedPort(
+          httpless,
+          patchConfig.mixedPort,
         ),
       );
     }

@@ -26,7 +26,7 @@ class FlClashHttpOverrides extends HttpOverrides {
     commonPrint.log('find $url proxy: $isStart');
     if (!isStart || suspend) return 'DIRECT';
     final profileOwned = read(profileOwnedProvider);
-    final mixedPort = profileOwned.mixedPort(
+    final port = profileOwned.dialPort(
       read(patchClashConfigProvider.select((state) => state.mixedPort)),
     );
     final credentials = profileOwned.authentication(
@@ -35,7 +35,7 @@ class FlClashHttpOverrides extends HttpOverrides {
       ).credentials,
     );
     final userInfo = credentials.isNotEmpty ? '${credentials.first}@' : '';
-    return 'PROXY ${userInfo}localhost:$mixedPort';
+    return 'PROXY ${userInfo}localhost:$port';
   }
 
   static bool allowBadCertificate(

@@ -40,16 +40,16 @@ ProxyState proxyState(Ref ref) {
       ),
     ),
   );
-  final mixedPort = ref
+  final port = ref
       .watch(profileOwnedProvider)
-      .mixedPort(
+      .dialPort(
         ref.watch(patchClashConfigProvider.select((state) => state.mixedPort)),
       );
   return ProxyState(
     isStart: suspend ? false : isStart,
     systemProxy: systemProxySelector.systemProxy,
     bassDomain: systemProxySelector.bypassDomain,
-    port: mixedPort,
+    port: port,
   );
 }
 

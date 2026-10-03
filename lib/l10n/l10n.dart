@@ -6542,6 +6542,16 @@ class AppLocalizations {
       args: [first, second, port],
     );
   }
+
+  /// `The profile's {key} takes port {port}, but FlClash needs a mixed or HTTP port there; change FlClash's mixed-port or the profile's {key}`
+  String profilePortTakesMixedPort(Object key, Object port) {
+    return Intl.message(
+      'The profile\'s $key takes port $port, but FlClash needs a mixed or HTTP port there; change FlClash\'s mixed-port or the profile\'s $key',
+      name: 'profilePortTakesMixedPort',
+      desc: '',
+      args: [key, port],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

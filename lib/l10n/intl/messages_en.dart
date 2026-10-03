@@ -133,32 +133,35 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m44(first, second, port) =>
       "${first} and ${second} both use port ${port}, so the core would start only ${first}";
 
-  static String m45(label, profiles) =>
+  static String m45(key, port) =>
+      "The profile\'s ${key} takes port ${port}, but FlClash needs a mixed or HTTP port there; change FlClash\'s mixed-port or the profile\'s ${key}";
+
+  static String m46(label, profiles) =>
       "${label} is still used by the custom proxy groups or rules of ${profiles}. Remove it there first";
 
-  static String m46(profiles, label) =>
+  static String m47(profiles, label) =>
       "The subscriptions of ${profiles} already have ${label}, so those profiles would switch to theirs. Choose another name";
 
-  static String m47(count) =>
+  static String m48(count) =>
       "${Intl.plural(count, one: '1 proxy', other: '${count} proxies')}";
 
-  static String m48(count) =>
+  static String m49(count) =>
       "${Intl.plural(count, one: '1 rule', other: '${count} rules')}";
 
-  static String m49(appName) => "${appName} (Safe mode)";
+  static String m50(appName) => "${appName} (Safe mode)";
 
-  static String m50(count) =>
+  static String m51(count) =>
       "${Intl.plural(count, one: '1 second', other: '${count} seconds')}";
 
-  static String m51(count) => "${count} selected";
+  static String m52(count) => "${count} selected";
 
-  static String m52(time) => "Checked at ${time}";
+  static String m53(time) => "Checked at ${time}";
 
-  static String m53(label) => "${label} must be a single item";
+  static String m54(label) => "${label} must be a single item";
 
-  static String m54(label) => "${label} must be a URL";
+  static String m55(label) => "${label} must be a URL";
 
-  static String m55(count) =>
+  static String m56(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -741,10 +744,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1070,6 +1072,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please enter the profile name",
     ),
     "profilePortCollision": m44,
+    "profilePortTakesMixedPort": m45,
     "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
       "The profile turns on TUN, but FlClash was not authorized to create it",
     ),
@@ -1082,8 +1085,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "profiles": MessageLookupByLibrary.simpleMessage("Profiles"),
     "profilesSort": MessageLookupByLibrary.simpleMessage("Sort profiles"),
     "project": MessageLookupByLibrary.simpleMessage("Project"),
-    "providerInUse": m45,
-    "providerRenameShadowed": m46,
+    "providerInUse": m46,
+    "providerRenameShadowed": m47,
     "providerSourceSubscription": MessageLookupByLibrary.simpleMessage(
       "Subscription",
     ),
@@ -1092,7 +1095,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "providers": MessageLookupByLibrary.simpleMessage("External resources"),
     "proxies": MessageLookupByLibrary.simpleMessage("Proxies"),
-    "proxiesCount": m47,
+    "proxiesCount": m48,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Proxies are empty"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("Proxy chain"),
     "proxyDefinition": MessageLookupByLibrary.simpleMessage(
@@ -1315,10 +1318,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Rule set"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Rule target"),
     "rules": MessageLookupByLibrary.simpleMessage("Rules"),
-    "rulesCount": m48,
+    "rulesCount": m49,
     "runTime": MessageLookupByLibrary.simpleMessage("Run time"),
     "safeMode": MessageLookupByLibrary.simpleMessage("Safe mode"),
-    "safeModeAppTitle": m49,
+    "safeModeAppTitle": m50,
     "sampleRate": MessageLookupByLibrary.simpleMessage("Sample rate"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
@@ -1331,7 +1334,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Search"),
     "seconds": MessageLookupByLibrary.simpleMessage("seconds"),
-    "secondsCount": m50,
+    "secondsCount": m51,
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selectProxies": MessageLookupByLibrary.simpleMessage("Select proxies"),
     "selectProxyProviders": MessageLookupByLibrary.simpleMessage(
@@ -1347,13 +1350,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please select a sub-rule",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m51,
+    "selectedCountTitle": m52,
     "server": MessageLookupByLibrary.simpleMessage("Server"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Available"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Blocked"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Check"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Check all"),
-    "serviceCheckedAt": m52,
+    "serviceCheckedAt": m53,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Coming soon"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Disallowed ISP",
@@ -1390,7 +1393,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start without showing the window",
     ),
     "singleAdd": MessageLookupByLibrary.simpleMessage("Single add"),
-    "singleValueTip": m53,
+    "singleValueTip": m54,
     "size": MessageLookupByLibrary.simpleMessage("Size"),
     "slide": MessageLookupByLibrary.simpleMessage("Slide"),
     "smartOptions": MessageLookupByLibrary.simpleMessage("Smart"),
@@ -1493,7 +1496,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain a profile from a URL",
     ),
-    "urlTip": m54,
+    "urlTip": m55,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM model"),
     "useProfileSettings": MessageLookupByLibrary.simpleMessage(
@@ -1525,7 +1528,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "Also set the system clock; Android ignores it",
     ),
-    "yearsAgo": m55,
+    "yearsAgo": m56,
     "yes": MessageLookupByLibrary.simpleMessage("Yes"),
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };

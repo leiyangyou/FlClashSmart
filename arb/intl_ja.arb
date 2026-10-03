@@ -788,5 +788,6 @@
   "useProfileSettingsDesc": "有効にすると、ポート、TUN、DNS などプロファイル自身が記述するすべての設定がアプリの設定より優先されます。上書きの編集は引き続き適用されます",
   "profileTunUnauthorized": "プロファイルは TUN を有効にしていますが、FlClash に TUN を作成する権限が付与されていません",
   "profileMixedPortUndialable": "プロファイルは mixed-port を {port} に設定していますが、FlClash はこのポートに接続できません",
-  "profilePortCollision": "{first} と {second} がどちらもポート {port} を使用しているため、コアは {first} だけを起動します"
+  "profilePortCollision": "{first} と {second} がどちらもポート {port} を使用しているため、コアは {first} だけを起動します",
+  "profilePortTakesMixedPort": "プロファイルの {key} がポート {port} を使用していますが、FlClash はそこに mixed または HTTP ポートを必要とします。FlClash の mixed-port かプロファイルの {key} を変更してください"
 }

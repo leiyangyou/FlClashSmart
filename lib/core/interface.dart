@@ -27,6 +27,8 @@ mixin CoreInterface {
 
   Future<Map<String, dynamic>> getConfig(String path);
 
+  Future<Set<String>> getProfileKeys(String path);
+
   Future<String> dumpRuleSet(String path);
 
   Future<Delay?> asyncTestDelay(String url, String proxyName);
@@ -213,6 +215,19 @@ abstract class CoreHandlerInterface with CoreInterface {
       method: CoreMethod.setupConfig,
       arguments: setupParams.toJson(),
     );
+  }
+
+  @override
+  Future<Set<String>> getProfileKeys(String path) async {
+    final keys = await _invokeMethod<Object?>(
+      method: CoreMethod.getProfileKeys,
+      arguments: path,
+    );
+    // Fail open: a profile that owns nothing gets the app's own values.
+    if (keys is! List || keys.any((key) => key is! String)) {
+      return const {};
+    }
+    return keys.cast<String>().toSet();
   }
 
   @override

@@ -73,6 +73,9 @@ Future<RealProfile> _build(
   Map<String, dynamic> rawConfig, {
   bool useProfileSettings = false,
   Set<String>? profileKeys,
+  bool overrideDns = true,
+  bool appendSystemDns = true,
+  bool safeMode = false,
 }) {
   return makeRealProfileTask(
     MakeRealProfileState(
@@ -80,9 +83,9 @@ Future<RealProfile> _build(
       profileId: 3,
       rawConfig: rawConfig,
       realPatchConfig: _patchConfig,
-      overrideDns: true,
+      overrideDns: overrideDns,
       overrideNtp: true,
-      appendSystemDns: true,
+      appendSystemDns: appendSystemDns,
       proxyGroups: const [],
       rules: const [],
       addedRules: const [],
@@ -90,6 +93,7 @@ Future<RealProfile> _build(
       authentication: const ['app:secret'],
       useProfileSettings: useProfileSettings,
       profileKeys: profileKeys ?? rawConfig.keys.toSet(),
+      safeMode: safeMode,
     ),
   );
 }
@@ -97,10 +101,14 @@ Future<RealProfile> _build(
 Future<YamlMap> _config(
   Map<String, dynamic> rawConfig, {
   bool useProfileSettings = true,
+  bool overrideDns = true,
+  bool appendSystemDns = true,
 }) async {
   final result = await _build(
     rawConfig,
     useProfileSettings: useProfileSettings,
+    overrideDns: overrideDns,
+    appendSystemDns: appendSystemDns,
   );
   return loadYaml(result.yaml) as YamlMap;
 }
@@ -154,7 +162,7 @@ void main() {
       expect(config['global-ua'], 'Profile-UA');
       expect(config['dns'], {
         'enable': true,
-        'listen': '0.0.0.0:53',
+        'listen': '0.0.0.0:1053',
         'enhanced-mode': 'redir-host',
         'nameserver': ['9.9.9.9'],
       });
@@ -220,12 +228,84 @@ void main() {
       ),
       ('a block without enable', {'enhanced-mode': 'redir-host'}),
       ('an empty block', <String, dynamic>{}),
-      ('an enabled block without nameservers', {'enable': true}),
     ]) {
       test('$name from the profile is kept as is', () async {
-        final config = await _config({'dns': block});
+        final config = await _config({'dns': block}, overrideDns: false);
 
         expect(config['dns'], block);
+      });
+    }
+  });
+
+  group('the dns block', () {
+    for (final (name, block) in [
+      ('an empty nameserver list', {'enable': true, 'nameserver': []}),
+      ('no nameserver list', {'enable': true}),
+    ]) {
+      for (final (useProfileSettings, overrideDns) in [
+        (true, false),
+        (true, true),
+        (false, true),
+      ]) {
+        test('an enabled dns block with $name resolves through the app\'s '
+            'nameservers, toggle ${useProfileSettings ? 'on' : 'off'}, '
+            'Override DNS ${overrideDns ? 'on' : 'off'}', () async {
+          final config = await _config(
+            {'dns': block},
+            useProfileSettings: useProfileSettings,
+            overrideDns: overrideDns,
+            appendSystemDns: false,
+          );
+
+          expect(config['dns']['enable'], true);
+          expect(config['dns']['nameserver'], ['1.1.1.1']);
+        });
+      }
+    }
+
+    for (final overrideDns in [false, true]) {
+      test('a profile dns block listens where the app would with Override DNS '
+          '${overrideDns ? 'on' : 'off'}', () async {
+        final profile = {
+          'dns': {
+            'enable': true,
+            'listen': '0.0.0.0:53',
+            'nameserver': ['9.9.9.9'],
+          },
+        };
+        final off = await _config(
+          profile,
+          useProfileSettings: false,
+          overrideDns: overrideDns,
+        );
+        final on = await _config(profile, overrideDns: overrideDns);
+
+        expect(on['dns']['listen'], off['dns']['listen']);
+        expect(
+          on['dns']['listen'],
+          overrideDns ? '0.0.0.0:1053' : '0.0.0.0:53',
+        );
+        expect(on['dns']['nameserver'], ['9.9.9.9']);
+      });
+    }
+
+    for (final safeMode in [false, true]) {
+      test('a dns block a script removed is the app\'s, '
+          'safe mode $safeMode', () async {
+        Future<RealProfile> build(bool useProfileSettings) => _build(
+          {'ipv6': true},
+          useProfileSettings: useProfileSettings,
+          profileKeys: {'ipv6', 'dns'},
+          safeMode: safeMode,
+        );
+        final on = await build(true);
+        final off = await build(false);
+        final onDns = (loadYaml(on.yaml) as YamlMap)['dns'];
+
+        expect(on.profileOwnedKeys, {'ipv6'});
+        expect(onDns, (loadYaml(off.yaml) as YamlMap)['dns']);
+        expect(onDns['nameserver'], ['1.1.1.1', 'system://']);
+        expect(onDns['listen'], safeMode ? '' : '0.0.0.0:1053');
       });
     }
   });

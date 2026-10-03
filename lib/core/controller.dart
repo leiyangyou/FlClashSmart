@@ -253,25 +253,26 @@ class CoreController {
       _interface.serviceCheck(params);
 
   Future<Map<String, dynamic>> getConfig(int id) async {
-    return (await getProfileConfig(id)).config;
-  }
-
-  /// [ProfileConfig.profileKeys] are the top-level keys the profile file sets;
-  /// the config map cannot say, since the core fills in every default.
-  Future<ProfileConfig> getProfileConfig(int id) async {
     return _readConfig(await appPath.getProfilePath(id.toString()));
   }
 
-  Future<Map<String, dynamic>> getAppliedConfig() async {
-    return (await _readConfig(await appPath.configFilePath)).config;
+  /// The top-level keys the profile file sets; [getConfig] cannot say, since
+  /// the core fills in every default.
+  Future<Set<String>> getProfileKeys(int id) async {
+    return _interface.getProfileKeys(
+      await appPath.getProfilePath(id.toString()),
+    );
   }
 
-  Future<ProfileConfig> _readConfig(String path) async {
+  Future<Map<String, dynamic>> getAppliedConfig() async {
+    return _readConfig(await appPath.configFilePath);
+  }
+
+  Future<Map<String, dynamic>> _readConfig(String path) async {
     final data = Map<String, dynamic>.from(await _interface.getConfig(path));
     data['rules'] = data['rule'];
     data.remove('rule');
-    final profileKeys = data.remove('flclash-profile-keys') as List? ?? [];
-    return (config: data, profileKeys: profileKeys.cast<String>().toSet());
+    return data;
   }
 
   Future<Traffic> getTraffic(bool onlyStatisticsProxy) async {

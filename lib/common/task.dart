@@ -115,7 +115,12 @@ Future<RealProfile> makeRealProfileTask(MakeRealProfileState data) async {
 Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   final rawConfig = Map.from(data.rawConfig);
   final profileOwnedKeys = data.useProfileSettings
-      ? profilePreferenceKeys.intersection(data.profileKeys)
+      ? {
+          for (final key in profilePreferenceKeys.intersection(
+            data.profileKeys,
+          ))
+            if (rawConfig[key] != null) key,
+        }
       : const <String>{};
   bool appOwns(String key) => !profileOwnedKeys.contains(key);
   void writePreference(String key, Object? value) {
@@ -250,10 +255,10 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   for (final host in realPatchConfig.hosts.entries) {
     rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
   }
+  var rawDns = rawConfig['dns'] is Map
+      ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
+      : <String, dynamic>{};
   if (appOwns('dns')) {
-    var rawDns = rawConfig['dns'] is Map
-        ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
-        : <String, dynamic>{};
     final isEnableDns = rawDns['enable'] == true;
     const systemDns = 'system://';
     if (!isEnableDns) {
@@ -276,8 +281,25 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
         rawDns['nameserver'] = [...nameserver, systemDns];
       }
     }
-    rawConfig['dns'] = rawDns;
+  } else {
+    // listen opens a port, like allow-lan, so Override DNS keeps it.
+    if (overrideDns) {
+      rawDns = mergeDnsOverride(
+        rawDns,
+        realPatchConfig.dns.overrideJson(
+          realPatchConfig.dnsOverrideKeys.intersection({DnsOverrideKey.listen}),
+        ),
+      );
+    }
+    final nameserver = rawDns['nameserver'];
+    if (rawDns['enable'] == true &&
+        (nameserver is! List || nameserver.isEmpty)) {
+      rawDns['nameserver'] = realPatchConfig.dns.nameserver.isNotEmpty
+          ? realPatchConfig.dns.nameserver
+          : defaultDns.nameserver;
+    }
   }
+  rawConfig['dns'] = rawDns;
   if (overrideNtp && appOwns('ntp')) {
     final rawNtp = rawConfig['ntp'] is Map
         ? Map<String, dynamic>.from(rawConfig['ntp'] as Map)

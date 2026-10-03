@@ -197,9 +197,5 @@
   "clash-for-android": {
     "append-system-dns": false,
     "ui-subtitle-pattern": ""
-  },
-  "flclash-profile-keys": [
-    "proxies",
-    "rules"
-  ]
+  }
 }

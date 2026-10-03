@@ -86,6 +86,7 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
         'mode': 'rule',
         'rule': ['MATCH,DIRECT'],
       },
+      CoreMethod.getProfileKeys => ['dns', 'ipv6'],
       CoreMethod.getMemoryStats => {
         'rss': 2048,
         'heapInuse': 1024,
@@ -119,6 +120,28 @@ class _FailingConfigCoreHandler extends _RecordingCoreHandler {
         message: 'config not found',
         details: {'path': '/missing.yaml'},
       );
+    }
+    return super.invokeMethod(
+      method: method,
+      arguments: arguments,
+      timeout: timeout,
+    );
+  }
+}
+
+class _ProfileKeysCoreHandler extends _RecordingCoreHandler {
+  final Object? profileKeys;
+
+  _ProfileKeysCoreHandler(this.profileKeys);
+
+  @override
+  Future<T?> invokeMethod<T>({
+    required CoreMethod method,
+    Object? arguments,
+    Duration? timeout,
+  }) async {
+    if (method == CoreMethod.getProfileKeys) {
+      return profileKeys as T?;
     }
     return super.invokeMethod(
       method: method,
@@ -340,6 +363,31 @@ void main() {
     expect(memory?.rss, 2048);
     expect(memory?.runtimeTotal, 1024 + 256 + 64 + 32);
   });
+
+  test('getProfileKeys sends the profile path', () async {
+    final handler = _RecordingCoreHandler();
+
+    expect(await handler.getProfileKeys('/profile.yaml'), {'dns', 'ipv6'});
+    expect(handler.calls[CoreMethod.getProfileKeys], '/profile.yaml');
+  });
+
+  for (final malformed in <Object?>[
+    null,
+    'ipv6',
+    {'ipv6': true},
+    [1, 2],
+    ['ipv6', null],
+  ]) {
+    test('a malformed getProfileKeys reply $malformed means no keys', () async {
+      final handler = _ProfileKeysCoreHandler(malformed);
+
+      expect(await handler.getProfileKeys('/profile.yaml'), isEmpty);
+      expect(await handler.getConfig('/config.yaml'), {
+        'mode': 'rule',
+        'rule': ['MATCH,DIRECT'],
+      });
+    });
+  }
 
   test('getConfig preserves structured core errors', () async {
     final handler = _FailingConfigCoreHandler();

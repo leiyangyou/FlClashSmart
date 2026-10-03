@@ -1050,37 +1050,93 @@ func TestDumpRuleSetRejectsText(t *testing.T) {
 	}
 }
 
-func TestHandleGetConfigReportsOnlyTheKeysTheProfileSets(t *testing.T) {
+func TestHandleGetProfileKeysReportsOnlyTheKeysTheProfileSets(t *testing.T) {
 	const fixtures = "../test/fixtures/profile_settings/source"
 	for name, want := range map[string][]string{
 		"minimal":      {"proxies", "rules"},
 		"ipv6_dns_ntp": {"dns", "ipv6", "ntp", "proxies", "rules"},
 	} {
 		t.Run(name, func(t *testing.T) {
-			got, err := handleGetConfig(filepath.Join(fixtures, name+".yaml"))
+			profilePath := filepath.Join(fixtures, name+".yaml")
+			profileKeys, err := handleGetProfileKeys(profilePath)
+			if err != nil {
+				t.Fatalf("handleGetProfileKeys: %v", err)
+			}
+			if !slices.Equal(profileKeys, want) {
+				t.Fatalf("profile keys = %v, want %v", profileKeys, want)
+			}
+			rawConfig, err := handleGetConfig(profilePath)
 			if err != nil {
 				t.Fatalf("handleGetConfig: %v", err)
 			}
-			if !slices.Equal(got.ProfileKeys, want) {
-				t.Fatalf("ProfileKeys = %v, want %v", got.ProfileKeys, want)
-			}
-			encoded, err := json.MarshalIndent(got, "", "  ")
-			if err != nil {
-				t.Fatalf("marshal: %v", err)
-			}
-			goldenPath := filepath.Join(fixtures, name+".core.json")
-			if os.Getenv("UPDATE_GOLDENS") != "" {
-				if err := os.WriteFile(goldenPath, append(encoded, '\n'), 0o644); err != nil {
-					t.Fatalf("write golden: %v", err)
-				}
-			}
-			golden, err := os.ReadFile(goldenPath)
-			if err != nil {
-				t.Fatalf("read golden: %v", err)
-			}
-			if string(golden) != string(encoded)+"\n" {
-				t.Fatalf("%s is stale; the Dart tests read it as the core's reply. Regenerate with UPDATE_GOLDENS=1 go test -run %s .", goldenPath, t.Name())
-			}
+			assertReplyGolden(t, filepath.Join(fixtures, name+".core.json"), rawConfig)
+			assertReplyGolden(t, filepath.Join(fixtures, name+".keys.json"), profileKeys)
 		})
+	}
+}
+
+func assertReplyGolden(t *testing.T, goldenPath string, reply any) {
+	t.Helper()
+	encoded, err := json.MarshalIndent(reply, "", "  ")
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if os.Getenv("UPDATE_GOLDENS") != "" {
+		if err := os.WriteFile(goldenPath, append(encoded, '\n'), 0o644); err != nil {
+			t.Fatalf("write golden: %v", err)
+		}
+	}
+	golden, err := os.ReadFile(goldenPath)
+	if err != nil {
+		t.Fatalf("read golden: %v", err)
+	}
+	if string(golden) != string(encoded)+"\n" {
+		t.Fatalf("%s is stale; the Dart tests read it as the core's reply. Regenerate with UPDATE_GOLDENS=1 go test -run %s .", goldenPath, t.Name())
+	}
+}
+
+// A profile the size of a large subscription: 20k proxies, 30k rules, ~3.7 MB.
+func writeLargeProfile(tb testing.TB) string {
+	var profile strings.Builder
+	profile.WriteString("ipv6: true\ndns:\n  enable: true\n  nameserver: [9.9.9.9]\nproxies:\n")
+	for i := 0; i < 20000; i++ {
+		fmt.Fprintf(&profile, "  - {name: proxy-%05d, type: ss, server: 10.%d.%d.%d, port: 8388, cipher: aes-128-gcm, password: password-%05d}\n", i, i/65536, i/256%256, i%256, i)
+	}
+	profile.WriteString("rules:\n")
+	for i := 0; i < 30000; i++ {
+		fmt.Fprintf(&profile, "  - DOMAIN-SUFFIX,host-%05d.example.com,DIRECT\n", i)
+	}
+	path := filepath.Join(tb.TempDir(), "large.yaml")
+	if err := os.WriteFile(path, []byte(profile.String()), 0o644); err != nil {
+		tb.Fatal(err)
+	}
+	return path
+}
+
+func BenchmarkGetConfigLargeProfile(b *testing.B) {
+	path := writeLargeProfile(b)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rawConfig, err := handleGetConfig(path)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if _, err := json.Marshal(rawConfig); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkGetProfileKeysLargeProfile(b *testing.B) {
+	path := writeLargeProfile(b)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		profileKeys, err := handleGetProfileKeys(path)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if _, err := json.Marshal(profileKeys); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

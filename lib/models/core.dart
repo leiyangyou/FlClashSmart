@@ -5,11 +5,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'generated/core.freezed.dart';
 part 'generated/core.g.dart';
 
-typedef ProfileConfig = ({
-  Map<String, dynamic> config,
-  Set<String> profileKeys,
-});
-
 @freezed
 abstract class SetupParams with _$SetupParams {
   const factory SetupParams({

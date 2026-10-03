@@ -12,6 +12,7 @@ enum CoreMethod {
   validateProxies,
   updateConfig,
   getConfig,
+  getProfileKeys,
   dumpRuleSet,
   getProxies,
   changeProxy,

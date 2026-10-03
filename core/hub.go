@@ -750,18 +750,19 @@ func handleGetMemoryStats() MemoryStats {
 	}
 }
 
-// RawConfig carries every mihomo default; only ProfileKeys says what the file set.
-type profileConfig struct {
-	*config.RawConfig
-	ProfileKeys []string `json:"flclash-profile-keys"`
-}
-
-func handleGetConfig(path string) (*profileConfig, error) {
+func handleGetConfig(path string) (*config.RawConfig, error) {
 	buf, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	rawConfig, err := config.UnmarshalRawConfig(buf)
+	return config.UnmarshalRawConfig(buf)
+}
+
+// The RawConfig from handleGetConfig carries every mihomo default, so only the
+// file itself says which keys the profile sets. Read on demand: it is a second
+// full parse of the profile.
+func handleGetProfileKeys(path string) ([]string, error) {
+	buf, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -779,7 +780,7 @@ func handleGetConfig(path string) (*profileConfig, error) {
 		}
 	}
 	slices.Sort(profileKeys)
-	return &profileConfig{RawConfig: rawConfig, ProfileKeys: profileKeys}, nil
+	return profileKeys, nil
 }
 
 func handleDumpRuleSet(path string) (string, error) {

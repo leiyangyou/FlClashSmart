@@ -172,6 +172,7 @@ const (
 	crashMethod                    CoreMethod = "crash"
 	setupConfigMethod              CoreMethod = "setupConfig"
 	getConfigMethod                CoreMethod = "getConfig"
+	getProfileKeysMethod           CoreMethod = "getProfileKeys"
 	dumpRuleSetMethod              CoreMethod = "dumpRuleSet"
 	clearEffectMethod              CoreMethod = "clearEffect"
 	watchRouteMethod               CoreMethod = "watchRoute"

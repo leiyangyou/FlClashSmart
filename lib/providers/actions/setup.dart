@@ -357,7 +357,10 @@ class SetupAction extends _$SetupAction {
     final useProfileSettings = ref.read(useProfileSettingsProvider);
     final appendSystemDns = networkSetting.appendSystemDns;
     final routeMode = networkSetting.routeMode;
-    final profileConfig = await _core.getProfileConfig(profileId);
+    final configMap = await _core.getConfig(profileId);
+    final profileKeys = useProfileSettings
+        ? await _core.getProfileKeys(profileId)
+        : const <String>{};
     String? scriptContent;
     final List<Rule> addedRules = [];
     final List<CustomProxy> proxies = [];
@@ -375,7 +378,7 @@ class SetupAction extends _$SetupAction {
     final realPatchConfig = patchConfig.copyWith(
       tun: patchConfig.tun.getRealTun(routeMode),
     );
-    Map<String, dynamic> rawConfig = profileConfig.config;
+    Map<String, dynamic> rawConfig = configMap;
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
@@ -405,7 +408,7 @@ class SetupAction extends _$SetupAction {
         matchTarget: setupState.matchTarget,
         safeMode: ref.read(safeModeProvider),
         useProfileSettings: useProfileSettings,
-        profileKeys: profileConfig.profileKeys,
+        profileKeys: profileKeys,
       ),
     );
     return res;

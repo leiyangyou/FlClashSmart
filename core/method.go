@@ -200,6 +200,14 @@ var methodHandlers = map[CoreMethod]methodHandler{
 		}
 		response.success(rawConfig)
 	}),
+	getProfileKeysMethod: withArguments(func(path *string, response MethodResponse) {
+		profileKeys, err := handleGetProfileKeys(*path)
+		if err != nil {
+			response.failure("core_error", err.Error(), nil)
+			return
+		}
+		response.success(profileKeys)
+	}),
 	dumpRuleSetMethod: withArguments(func(path *string, response MethodResponse) {
 		safeGo(response, func() {
 			text, err := handleDumpRuleSet(*path)

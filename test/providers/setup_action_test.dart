@@ -947,13 +947,12 @@ void main() {
           'useProfileSettings $useProfileSettings', () async {
         final profile = Profile.normal(label: 'p');
         final core = _MockCoreHandlerInterface();
-        when(() => core.getConfig(any())).thenAnswer(
-          (_) async => {
-            'ipv6': true,
-            'log-level': 'debug',
-            'flclash-profile-keys': ['ipv6', 'log-level'],
-          },
-        );
+        when(
+          () => core.getConfig(any()),
+        ).thenAnswer((_) async => {'ipv6': true, 'log-level': 'debug'});
+        when(
+          () => core.getProfileKeys(any()),
+        ).thenAnswer((_) async => {'ipv6', 'log-level'});
         String? pushedConfig;
         when(() => core.setupConfig(any())).thenAnswer((_) async {
           pushedConfig = await File(
@@ -1009,6 +1008,11 @@ void main() {
         expect(params['authentication'], ['user:pass']);
         expect(params['mixed-port'], defaultMixedPort);
         expect(params['mode'], 'rule');
+        if (useProfileSettings) {
+          verify(() => core.getProfileKeys(any())).called(1);
+        } else {
+          verifyNever(() => core.getProfileKeys(any()));
+        }
       });
     }
 
@@ -1016,12 +1020,10 @@ void main() {
         'even when the config is unchanged', () async {
       final profile = Profile.normal(label: 'p');
       final core = _MockCoreHandlerInterface();
-      when(() => core.getConfig(any())).thenAnswer(
-        (_) async => {
-          'ipv6': false,
-          'flclash-profile-keys': ['ipv6'],
-        },
-      );
+      when(
+        () => core.getConfig(any()),
+      ).thenAnswer((_) async => {'ipv6': false});
+      when(() => core.getProfileKeys(any())).thenAnswer((_) async => {'ipv6'});
       when(() => core.setupConfig(any())).thenAnswer((_) async => '');
       when(() => core.updateConfig(any())).thenAnswer((_) async => '');
       final scoped = ProviderContainer(
@@ -1062,14 +1064,21 @@ void main() {
       ('ipv6_dns_ntp', {'ipv6', 'dns', 'ntp'}),
     ]) {
       test('the $fixture profile as the core reads it owns $owned', () async {
-        final coreReply = jsonDecode(
+        Object? coreReply(String extension) => jsonDecode(
           File(
-            'test/fixtures/profile_settings/source/$fixture.core.json',
+            'test/fixtures/profile_settings/source/$fixture.$extension',
           ).readAsStringSync(),
         );
+        final configReply = coreReply('core.json') as Map<String, dynamic>;
+        final profileKeys = (coreReply('keys.json') as List)
+            .cast<String>()
+            .toSet();
         final profile = Profile.normal(label: 'p');
         final core = _MockCoreHandlerInterface();
-        when(() => core.getConfig(any())).thenAnswer((_) async => coreReply);
+        when(() => core.getConfig(any())).thenAnswer((_) async => configReply);
+        when(
+          () => core.getProfileKeys(any()),
+        ).thenAnswer((_) async => profileKeys);
         Future<RealProfile> build(bool useProfileSettings) async {
           final scoped = ProviderContainer(
             overrides: [
@@ -1100,10 +1109,9 @@ void main() {
         final on = await build(true);
         final offConfig = loadYaml(off.yaml) as YamlMap;
         final onConfig = loadYaml(on.yaml) as YamlMap;
-        final profileConfig = jsonDecode(jsonEncode(coreReply)) as Map;
+        final profileConfig = coreReply('core.json') as Map;
 
         expect(on.profileOwnedKeys, owned);
-        expect(onConfig.containsKey('flclash-profile-keys'), isFalse);
         for (final key in profilePreferenceKeys) {
           final want = owned.contains(key)
               ? profileConfig[key]

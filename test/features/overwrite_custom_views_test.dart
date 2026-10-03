@@ -41,6 +41,7 @@ class _TestProfileCustomRules extends ProfileCustomRules {
 class _TestProxyGroups extends ProxyGroups {
   final List<ProxyGroup> initial;
   final List<Set<int>> deleted = [];
+  final List<ProxyGroup> saved = [];
 
   _TestProxyGroups(this.initial);
 
@@ -49,6 +50,12 @@ class _TestProxyGroups extends ProxyGroups {
 
   @override
   void order(int oldIndex, int newIndex) {}
+
+  @override
+  bool put(ProxyGroup proxyGroup) {
+    saved.add(proxyGroup);
+    return true;
+  }
 
   @override
   void delAll(Iterable<int> proxyGroupIds) {
@@ -103,6 +110,7 @@ Future<_TestProxyGroups> _pumpProxyGroups(
   WidgetTester tester, {
   GroupType type = GroupType.Selector,
   Size viewport = const Size(1400, 1000),
+  double? sampleRate,
 }) async {
   _setViewport(tester, viewport);
   final profile = Profile.normal().copyWith(
@@ -116,6 +124,7 @@ Future<_TestProxyGroups> _pumpProxyGroups(
       name: 'Group $index',
       type: type,
       proxies: const ['DIRECT'],
+      sampleRate: sampleRate,
     ),
   );
   final notifier = _TestProxyGroups(proxyGroups);
@@ -243,6 +252,69 @@ void main() {
     await tester.enterText(rateField, '0.25.');
     await tester.pump();
     expect(fieldText(rateField), '0.25');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a lone decimal separator keeps the saved sample rate', (
+    tester,
+  ) async {
+    final l10n = AppLocalizations.current;
+    final notifier = await _pumpProxyGroups(
+      tester,
+      type: GroupType.Smart,
+      viewport: const Size(1400, 2600),
+      sampleRate: 0.5,
+    );
+
+    await tester.tap(find.text('Group 0'));
+    await tester.pumpAndSettle();
+
+    final rateField = find.descendant(
+      of: find.ancestor(
+        of: find.text(l10n.sampleRate),
+        matching: find.byType(OverwriteFormRow),
+      ),
+      matching: find.byType(TextFormField),
+    );
+    // "." is the one non-empty string the formatter lets through unparsed.
+    await tester.enterText(rateField, '.');
+    await tester.pump();
+    await tester.tap(find.byTooltip(l10n.save));
+    await tester.pumpAndSettle();
+
+    expect(notifier.saved.single.sampleRate, 0.5);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a comma decimal keyboard saves a real sample rate', (
+    tester,
+  ) async {
+    final l10n = AppLocalizations.current;
+    final notifier = await _pumpProxyGroups(
+      tester,
+      type: GroupType.Smart,
+      viewport: const Size(1400, 2600),
+      sampleRate: 0.5,
+    );
+
+    await tester.tap(find.text('Group 0'));
+    await tester.pumpAndSettle();
+
+    final rateField = find.descendant(
+      of: find.ancestor(
+        of: find.text(l10n.sampleRate),
+        matching: find.byType(OverwriteFormRow),
+      ),
+      matching: find.byType(TextFormField),
+    );
+    await tester.enterText(rateField, '0,25');
+    await tester.pump();
+    await tester.tap(find.byTooltip(l10n.save));
+    await tester.pumpAndSettle();
+
+    expect(notifier.saved.single.sampleRate, 0.25);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });

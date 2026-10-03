@@ -656,7 +656,8 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
         textAlign: TextAlign.end,
         initialValue: sampleRate?.toString(),
         onChanged: (value) {
-          final parsed = double.tryParse(value);
+          // Several keyboards, ru and de among them, use a comma separator.
+          final parsed = double.tryParse(value.replaceAll(',', '.'));
           // A half-typed value must not clear a saved rate.
           if (value.isNotEmpty && parsed == null) {
             return;
@@ -837,7 +838,7 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
                   ),
                 ),
                 _field((state) => state.lazy, _buildLazyItem),
-                if (type == GroupType.URLTest)
+                if (type == GroupType.URLTest || type == GroupType.Smart)
                   _field(
                     (state) => state.tolerance,
                     (value) => _buildNumberItem(

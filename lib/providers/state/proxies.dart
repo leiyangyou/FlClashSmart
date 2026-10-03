@@ -40,9 +40,11 @@ ProxyState proxyState(Ref ref) {
       ),
     ),
   );
-  final mixedPort = ref.watch(
-    patchClashConfigProvider.select((state) => state.mixedPort),
-  );
+  final mixedPort = ref
+      .watch(profileOwnedProvider)
+      .mixedPort(
+        ref.watch(patchClashConfigProvider.select((state) => state.mixedPort)),
+      );
   return ProxyState(
     isStart: suspend ? false : isStart,
     systemProxy: systemProxySelector.systemProxy,

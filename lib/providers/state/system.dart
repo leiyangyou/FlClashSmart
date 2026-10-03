@@ -43,13 +43,14 @@ TrayState trayState(Ref ref) {
   final selectedMap = ref.watch(selectedMapProvider);
   final safeMode = ref.watch(safeModeProvider);
   final hotKeys = _trayHotKeys(ref);
+  final profileOwned = ref.watch(profileOwnedProvider);
 
   return TrayState(
     mode: clashConfig.mode,
-    port: clashConfig.mixedPort,
+    port: profileOwned.mixedPort(clashConfig.mixedPort),
     autoLaunch: appSetting.autoLaunch,
     systemProxy: systemProxy,
-    tunEnable: clashConfig.tunEnable,
+    tunEnable: profileOwned.tunEnable(clashConfig.tunEnable),
     isStart: isStart,
     groups: groups,
     selectedMap: selectedMap,
@@ -157,9 +158,11 @@ bool shouldPatchSystemDns(Ref ref) {
     return false;
   }
   final isStart = ref.watch(runTimeProvider.select((state) => state != null));
-  final tunEnable = ref.watch(
-    patchClashConfigProvider.select((state) => state.tun.enable),
-  );
+  final tunEnable = ref
+      .watch(profileOwnedProvider)
+      .tunEnable(
+        ref.watch(patchClashConfigProvider.select((state) => state.tun.enable)),
+      );
   final authorizationState = ref.watch(authorizedTunEnableProvider);
   return isStart &&
       tunEnable &&
@@ -187,12 +190,15 @@ SharedState sharedState(Ref ref) {
       ),
     ),
   );
+  final profileOwned = ref.watch(profileOwnedProvider);
   final networkSetting = ref.watch(
     networkSettingProvider.select(
       (state) => (
         bypassDomain: state.bypassDomain,
         routeMode: state.routeMode,
-        authenticated: state.authentication.credentials.isNotEmpty,
+        authenticated: profileOwned
+            .authentication(state.authentication.credentials)
+            .isNotEmpty,
       ),
     ),
   );
@@ -213,7 +219,7 @@ SharedState sharedState(Ref ref) {
   final crashlytics = appSetting.crashlytics;
   final testUrl = appSetting.testUrl;
   final stack = clashConfig.stack;
-  final port = clashConfig.mixedPort;
+  final port = profileOwned.mixedPort(clashConfig.mixedPort);
   return SharedState(
     currentProfileName: currentProfileName,
     onlyStatisticsProxy: onlyStatisticsProxy,

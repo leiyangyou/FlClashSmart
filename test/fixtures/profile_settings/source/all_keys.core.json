@@ -1,0 +1,230 @@
+{
+  "port": 17891,
+  "socks-port": 17892,
+  "redir-port": 17893,
+  "tproxy-port": 17894,
+  "mixed-port": 17890,
+  "ss-config": "",
+  "vmess-config": "",
+  "inbound-tfo": false,
+  "inbound-mptcp": false,
+  "authentication": [
+    "profile:secret"
+  ],
+  "skip-auth-prefixes": [
+    "127.0.0.1/32"
+  ],
+  "lan-allowed-ips": [
+    "0.0.0.0/0",
+    "::/0"
+  ],
+  "lan-disallowed-ips": null,
+  "allow-lan": true,
+  "bind-address": "*",
+  "mode": "global",
+  "unified-delay": false,
+  "log-level": "debug",
+  "ipv6": true,
+  "external-controller": "127.0.0.1:19090",
+  "external-controller-routing-mark": 0,
+  "external-controller-pipe": "",
+  "external-controller-unix": "",
+  "external-controller-tls": "",
+  "external-controller-cors": {
+    "allow-origins": [
+      "*"
+    ],
+    "allow-private-network": true
+  },
+  "external-ui": "ui",
+  "external-ui-url": "https://profile.example/ui.zip",
+  "external-ui-name": "",
+  "external-doh-server": "",
+  "secret": "",
+  "interface-name": "en9",
+  "routing-mark": 0,
+  "tunnels": null,
+  "geo-auto-update": true,
+  "geo-update-interval": 6,
+  "geodata-mode": false,
+  "geodata-loader": "standard",
+  "geosite-matcher": "",
+  "tcp-concurrent": false,
+  "find-process-mode": "always",
+  "global-client-fingerprint": "",
+  "global-ua": "Profile-UA",
+  "etag-support": true,
+  "keep-alive-idle": 0,
+  "keep-alive-interval": 90,
+  "disable-keep-alive": false,
+  "lgbm-auto-update": false,
+  "lgbm-update-interval": 72,
+  "lgbm-url": "https://profile.example/model.bin",
+  "proxy-providers": null,
+  "rule-providers": null,
+  "proxies": [
+    {
+      "name": "profile-proxy",
+      "port": 1080,
+      "server": "10.0.0.9",
+      "type": "socks5"
+    }
+  ],
+  "proxy-groups": [
+    {
+      "name": "ProfileGroup",
+      "proxies": [
+        "profile-proxy"
+      ],
+      "type": "select"
+    }
+  ],
+  "rule": [
+    "DOMAIN,profile.example,ProfileGroup",
+    "MATCH,DIRECT"
+  ],
+  "sub-rules": null,
+  "listeners": null,
+  "hosts": {
+    "profile.local": "10.0.0.1"
+  },
+  "dns": {
+    "enable": true,
+    "prefer-h3": false,
+    "ipv6": false,
+    "ipv6-timeout": 100,
+    "use-hosts": true,
+    "use-system-hosts": true,
+    "respect-rules": false,
+    "nameserver": [
+      "9.9.9.9"
+    ],
+    "fallback": null,
+    "fallback-filter": {
+      "geoip": true,
+      "geoip-code": "CN",
+      "ipcidr": [],
+      "domain": null,
+      "geosite": []
+    },
+    "fallback-lazy-query": false,
+    "listen": "0.0.0.0:53",
+    "listen-routing-mark": 0,
+    "enhanced-mode": "redir-host",
+    "fake-ip-range": "198.18.0.1/16",
+    "fake-ip-range6": "",
+    "fake-ip-filter": [
+      "dns.msftnsci.com",
+      "www.msftnsci.com",
+      "www.msftconnecttest.com"
+    ],
+    "fake-ip-filter-mode": "blacklist",
+    "fake-ip-ttl": 1,
+    "default-nameserver": [
+      "114.114.114.114",
+      "223.5.5.5",
+      "8.8.8.8",
+      "1.0.0.1"
+    ],
+    "cache-algorithm": "",
+    "cache-max-size": 0,
+    "nameserver-policy": null,
+    "proxy-server-nameserver": null,
+    "proxy-server-nameserver-policy": null,
+    "direct-nameserver": null,
+    "direct-nameserver-follow-policy": false
+  },
+  "ntp": {
+    "enable": true,
+    "server": "ntp.aliyun.com",
+    "port": 123,
+    "interval": 30,
+    "dialer-proxy": "",
+    "write-to-system": false
+  },
+  "tun": {
+    "enable": true,
+    "device": "utun99",
+    "stack": "System",
+    "dns-hijack": [
+      "0.0.0.0:53"
+    ],
+    "auto-route": false,
+    "auto-detect-interface": true,
+    "inet6-address": [
+      "fdfe:dcba:9876::1/126"
+    ],
+    "file-descriptor": 0,
+    "recvmsgx": true,
+    "processors-per-channel": 1
+  },
+  "tuic-server": {
+    "enable": false,
+    "listen": "",
+    "token": null,
+    "certificate": "",
+    "private-key": "",
+    "max-idle-time": 15000,
+    "authentication-timeout": 1000,
+    "alpn": [
+      "h3"
+    ],
+    "max-udp-relay-packet-size": 1500
+  },
+  "iptables": {
+    "enable": false,
+    "inbound-interface": "lo",
+    "bypass": [],
+    "dns-redirect": true
+  },
+  "experimental": {
+    "fingerprints": null,
+    "quic-go-disable-gso": false,
+    "quic-go-disable-ecn": true,
+    "dialer-ip4p-convert": false
+  },
+  "profile": {
+    "store-selected": true,
+    "store-fake-ip": false,
+    "smart-collector-size": 100
+  },
+  "geox-url": {
+    "geoip": "https://profile.example/geoip.dat",
+    "mmdb": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb",
+    "asn": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb",
+    "geosite": "https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat"
+  },
+  "sniffer": {
+    "enable": true,
+    "override-destination": true,
+    "sniffing": null,
+    "force-domain": [],
+    "skip-src-address": null,
+    "skip-dst-address": null,
+    "skip-domain": [],
+    "port-whitelist": [],
+    "force-dns-mapping": true,
+    "parse-pure-ip": true,
+    "sniff": {
+      "HTTP": {
+        "ports": [
+          "80",
+          "8080"
+        ],
+        "override-destination": null
+      }
+    }
+  },
+  "tls": {
+    "certificate": "",
+    "private-key": "",
+    "client-auth-type": "",
+    "client-auth-cert": "",
+    "ech-key": "",
+    "custom-certifactes": null
+  },
+  "clash-for-android": {
+    "append-system-dns": false,
+    "ui-subtitle-pattern": ""
+  }
+}

@@ -1062,6 +1062,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter the profile name",
     ),
+    "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
+      "The profile turns on TUN, but FlClash was not authorized to create it",
+    ),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a valid profile URL",
     ),
@@ -1489,7 +1492,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Use my profile settings",
     ),
     "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app\'s",
+      "When enabled, every setting the profile states itself, including ports, TUN and DNS, takes precedence over the app\'s; your overwrite edits still apply",
     ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("Used traffic"),

@@ -122,6 +122,30 @@ class TestSetupAction extends SetupAction {
   }
 }
 
+const nullProfileSetupState = SetupState(
+  profileId: null,
+  profileLastUpdateDate: null,
+  overwriteType: OverwriteType.standard,
+  rules: [],
+  proxyGroups: [],
+  addedRules: [],
+  script: null,
+  overrideDns: false,
+  dns: Dns(),
+  dnsOverrideKeys: {},
+);
+
+class TestAuthorizingSetupAction extends SetupAction {
+  int authorizeCalls = 0;
+  AuthorizeCode authorizeResult = AuthorizeCode.none;
+
+  @override
+  Future<AuthorizeCode> authorizeCore() async {
+    authorizeCalls++;
+    return authorizeResult;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() {
@@ -591,7 +615,7 @@ void main() {
       final params =
           verify(() => core.updateConfig(captureAny())).captured.single
               as UpdateParams;
-      expect(params.tun.enable, isFalse);
+      expect(params.tun?.enable, isFalse);
       expect(scopedAction.authorizeCalls, 0);
     });
 
@@ -779,19 +803,6 @@ void main() {
 
     // profileId: null routes getProfile/setupState around the database and
     // Core.getConfig, isolating the behavior under test.
-    const nullProfileSetupState = SetupState(
-      profileId: null,
-      profileLastUpdateDate: null,
-      overwriteType: OverwriteType.standard,
-      rules: [],
-      proxyGroups: [],
-      addedRules: [],
-      script: null,
-      overrideDns: false,
-      dns: Dns(),
-      dnsOverrideKeys: {},
-    );
-
     test(
       'a refresh failure still runs core.setupConfig and preloadInvoke',
       () async {
@@ -1000,9 +1011,9 @@ void main() {
                     as UpdateParams)
                 .toJson();
         expect(config['ipv6'], useProfileSettings);
-        expect(config['log-level'], 'error');
+        expect(config['log-level'], useProfileSettings ? 'debug' : 'error');
         expect(params['ipv6'], useProfileSettings ? isNull : false);
-        expect(params['log-level'], 'error');
+        expect(params['log-level'], useProfileSettings ? isNull : 'error');
         expect(params['allow-lan'], false);
         expect(params['tcp-concurrent'], true);
         expect(params['authentication'], ['user:pass']);
@@ -1058,79 +1069,6 @@ void main() {
       verify(() => core.setupConfig(any())).called(1);
       expect(pushedIpv6(), false);
     });
-
-    for (final (fixture, owned) in [
-      ('minimal', <String>{}),
-      ('ipv6_dns_ntp', {'ipv6', 'dns', 'ntp'}),
-    ]) {
-      test('the $fixture profile as the core reads it owns $owned', () async {
-        Object? coreReply(String extension) => jsonDecode(
-          File(
-            'test/fixtures/profile_settings/source/$fixture.$extension',
-          ).readAsStringSync(),
-        );
-        final configReply = coreReply('core.json') as Map<String, dynamic>;
-        final profileKeys = (coreReply('keys.json') as List)
-            .cast<String>()
-            .toSet();
-        final profile = Profile.normal(label: 'p');
-        final core = _MockCoreHandlerInterface();
-        when(() => core.getConfig(any())).thenAnswer((_) async => configReply);
-        when(
-          () => core.getProfileKeys(any()),
-        ).thenAnswer((_) async => profileKeys);
-        Future<RealProfile> build(bool useProfileSettings) async {
-          final scoped = ProviderContainer(
-            overrides: [
-              coreHandlerProvider.overrideWithValue(
-                CoreController.scoped(core),
-              ),
-              setupActionProvider.overrideWith(SetupAction.new),
-              useProfileSettingsProvider.overrideWithBuild(
-                (_, _) => useProfileSettings,
-              ),
-              networkSettingProvider.overrideWithBuild(
-                (_, _) => const NetworkProps(appendSystemDns: true),
-              ),
-            ],
-          );
-          addTearDown(scoped.dispose);
-          return scoped
-              .read(setupActionProvider.notifier)
-              .getProfile(
-                setupState: nullProfileSetupState.copyWith(
-                  profileId: profile.id,
-                ),
-                patchConfig: const PatchClashConfig(),
-              );
-        }
-
-        final off = await build(false);
-        final on = await build(true);
-        final offConfig = loadYaml(off.yaml) as YamlMap;
-        final onConfig = loadYaml(on.yaml) as YamlMap;
-        final profileConfig = coreReply('core.json') as Map;
-
-        expect(on.profileOwnedKeys, owned);
-        for (final key in profilePreferenceKeys) {
-          final want = owned.contains(key)
-              ? profileConfig[key]
-              : offConfig[key];
-          expect(
-            jsonDecode(jsonEncode(onConfig[key])),
-            jsonDecode(jsonEncode(want)),
-            reason: key,
-          );
-        }
-        expect(
-          (onConfig['dns']['nameserver'] as List).contains('system://'),
-          !owned.contains('dns'),
-        );
-        if (owned.isEmpty) {
-          expect(on.yaml, off.yaml);
-        }
-      });
-    }
 
     test('a custom overwrite injects only the providers it names', () async {
       final profile = Profile.normal(label: 'p');
@@ -1320,5 +1258,356 @@ void main() {
         verify(() => core.setupConfig(any())).called(1);
       },
     );
+
+    group('use my profile settings', () {
+      const sourceFixtures = 'test/fixtures/profile_settings/source';
+      const appPatchConfig = PatchClashConfig(
+        ntp: Ntp(server: 'time.cloudflare.com'),
+        ntpOverrideKeys: {NtpOverrideKey.server},
+        hosts: {'app.local': '10.0.0.2'},
+      );
+      const appliedOverwriteKeys = {
+        'proxies',
+        'proxy-groups',
+        'rules',
+        'proxy-providers',
+        'rule-providers',
+        'sniffer',
+        'profile',
+      };
+
+      Object? coreReply(String fixture, String extension) => jsonDecode(
+        File('$sourceFixtures/$fixture.$extension').readAsStringSync(),
+      );
+      Object? plain(Object? value) => jsonDecode(jsonEncode(value));
+
+      _MockCoreHandlerInterface fixtureCore(String fixture) {
+        final core = _MockCoreHandlerInterface();
+        when(() => core.getConfig(any())).thenAnswer(
+          (_) async => coreReply(fixture, 'core.json') as Map<String, dynamic>,
+        );
+        when(() => core.getProfileKeys(any())).thenAnswer(
+          (_) async =>
+              (coreReply(fixture, 'keys.json') as List).cast<String>().toSet(),
+        );
+        when(() => core.setupConfig(any())).thenAnswer((_) async => '');
+        when(() => core.updateConfig(any())).thenAnswer((_) async => '');
+        return core;
+      }
+
+      ProviderContainer scopedSetup(
+        CoreHandlerInterface core, {
+        required bool useProfileSettings,
+        SetupState Function(int? profileId)? setupState,
+        PatchClashConfig patchConfig = appPatchConfig,
+        SetupAction Function()? action,
+      }) {
+        final profile = Profile.normal(label: 'p');
+        final scoped = ProviderContainer(
+          overrides: [
+            profilesProvider.overrideWith(() => TestProfiles([profile])),
+            currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+            setupStateProvider.overrideWith(
+              (_, profileId) =>
+                  setupState?.call(profileId) ??
+                  nullProfileSetupState.copyWith(profileId: profileId),
+            ),
+            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+            setupActionProvider.overrideWith(
+              action ?? TestAuthorizingSetupAction.new,
+            ),
+            useProfileSettingsProvider.overrideWithBuild(
+              (_, _) => useProfileSettings,
+            ),
+            overrideNtpProvider.overrideWithBuild((_, _) => true),
+            networkSettingProvider.overrideWithBuild(
+              (_, _) => const NetworkProps(appendSystemDns: true),
+            ),
+            patchClashConfigProvider.overrideWithBuild((_, _) => patchConfig),
+          ],
+        );
+        addTearDown(scoped.dispose);
+        return scoped;
+      }
+
+      Future<String> pushedConfigOf(
+        ProviderContainer scoped, {
+        bool expectApplied = true,
+      }) async {
+        final applied = await scoped
+            .read(setupActionProvider.notifier)
+            .applyProfile(force: true);
+        expect(applied, expectApplied);
+        return File(await appPath.configFilePath).readAsString();
+      }
+
+      for (final fixture in ['all_keys', 'minimal']) {
+        test('every top-level key of the $fixture profile is the profile\'s '
+            'when it states it and the app\'s otherwise', () async {
+          final configReply = coreReply(fixture, 'core.json') as Map;
+          final profileKeys = (coreReply(fixture, 'keys.json') as List)
+              .cast<String>()
+              .toSet();
+          final stated = profileKeys.difference(appliedOverwriteKeys);
+          Future<YamlMap> build(bool useProfileSettings) async {
+            final scoped = scopedSetup(
+              fixtureCore(fixture),
+              useProfileSettings: useProfileSettings,
+            );
+            final res = await scoped
+                .read(setupActionProvider.notifier)
+                .getProfile(
+                  setupState: nullProfileSetupState.copyWith(profileId: 1),
+                  patchConfig: appPatchConfig,
+                );
+            return loadYaml(res.yaml) as YamlMap;
+          }
+
+          final off = await build(false);
+          final on = await build(true);
+
+          expect(on.keys.toSet(), off.keys.toSet());
+          for (final key in on.keys.cast<String>()) {
+            if (stated.contains(key)) {
+              expect(plain(on[key]), plain(configReply[key]), reason: key);
+              expect(
+                plain(off[key]),
+                isNot(plain(configReply[key])),
+                reason: '$key: the fixture must differ from the app\'s value',
+              );
+            } else {
+              expect(plain(on[key]), plain(off[key]), reason: key);
+            }
+          }
+          expect(stated.difference(on.keys.toSet()), isEmpty);
+          if (fixture == 'minimal') {
+            expect(stated, isEmpty);
+          }
+        });
+      }
+
+      for (final overwriteType in [
+        OverwriteType.custom,
+        OverwriteType.standard,
+      ]) {
+        test('the ${overwriteType.name} overwrite still applies to a profile '
+            'that states its proxies, groups and rules', () async {
+          final core = fixtureCore('all_keys');
+          const profileProxy = {
+            'name': 'profile-proxy',
+            'type': 'socks5',
+            'server': '10.0.0.9',
+            'port': 1080,
+          };
+          const customProxy = {
+            'name': 'custom-proxy',
+            'type': 'socks5',
+            'server': '10.0.0.10',
+            'port': 1081,
+          };
+          final scoped = scopedSetup(
+            core,
+            useProfileSettings: true,
+            setupState: (profileId) => switch (overwriteType) {
+              OverwriteType.custom => nullProfileSetupState.copyWith(
+                profileId: profileId,
+                overwriteType: OverwriteType.custom,
+                customProxies: [
+                  CustomProxy.fromDefinition(profileProxy, id: 1),
+                  CustomProxy.fromDefinition(customProxy, id: 2),
+                ],
+                proxyGroups: const [
+                  ProxyGroup(
+                    id: 3,
+                    name: 'ProfileGroup',
+                    type: GroupType.Selector,
+                    proxies: ['profile-proxy'],
+                  ),
+                  ProxyGroup(
+                    id: 4,
+                    name: 'CustomGroup',
+                    type: GroupType.Selector,
+                    proxies: ['custom-proxy'],
+                  ),
+                ],
+                rules: [
+                  Rule.parse('DOMAIN,custom.example,CustomGroup', id: 5),
+                  Rule.parse('DOMAIN,profile.example,ProfileGroup', id: 6),
+                  Rule.parse('MATCH,DIRECT', id: 7),
+                ],
+              ),
+              _ => nullProfileSetupState.copyWith(
+                profileId: profileId,
+                addedRules: [Rule.parse('DOMAIN,added.example,DIRECT', id: 8)],
+              ),
+            },
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+          final rules = plain(config['rules']);
+          final proxyNames = [
+            for (final proxy in config['proxies'] as YamlList) proxy['name'],
+          ];
+          final groupNames = [
+            for (final group in config['proxy-groups'] as YamlList)
+              group['name'],
+          ];
+
+          expect(config['profile']['store-selected'], false);
+          expect(config['mixed-port'], 17890);
+          if (overwriteType == OverwriteType.custom) {
+            expect(proxyNames, ['profile-proxy', 'custom-proxy']);
+            expect(groupNames, ['ProfileGroup', 'CustomGroup']);
+            expect(rules, [
+              'DOMAIN,custom.example,CustomGroup',
+              'DOMAIN,profile.example,ProfileGroup',
+              'MATCH,DIRECT',
+            ]);
+          } else {
+            expect(proxyNames, ['profile-proxy']);
+            expect(groupNames, ['ProfileGroup']);
+            expect(rules, [
+              'DOMAIN,added.example,DIRECT',
+              'DOMAIN,profile.example,ProfileGroup',
+              'MATCH,DIRECT',
+            ]);
+          }
+        });
+      }
+
+      test('a profile that states the controller and its authentication '
+          'leaves the app in control of its core and its own proxy', () async {
+        final core = fixtureCore('all_keys');
+        final scoped = scopedSetup(
+          core,
+          useProfileSettings: true,
+          patchConfig: appPatchConfig.copyWith(
+            externalController: ExternalControllerStatus.open,
+          ),
+        );
+        scoped.listen(proxyStateProvider, (_, _) {});
+        scoped.listen(trayStateProvider, (_, _) {});
+        final setup = scoped.read(setupActionProvider.notifier);
+
+        final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+        await setup.updateConfig();
+        scoped.read(runTimeProvider.notifier).value = 1;
+
+        expect(config['external-controller'], '127.0.0.1:19090');
+        expect(config['authentication'], ['profile:secret']);
+        expect(config['skip-auth-prefixes'], ['127.0.0.1/32']);
+        verify(() => core.setupConfig(any())).called(1);
+        final params =
+            (verify(() => core.updateConfig(captureAny())).captured.single
+                    as UpdateParams)
+                .toJson();
+        expect(params['external-controller'], isNull);
+        expect(params['authentication'], isNull);
+        expect(params['mixed-port'], isNull);
+        expect(
+          FlClashHttpOverrides.findProxyForReader(
+            scoped.read,
+            Uri.parse('https://example.com'),
+          ),
+          'PROXY profile:secret@localhost:17890',
+        );
+        expect(scoped.read(proxyStateProvider).port, 17890);
+        expect(scoped.read(trayStateProvider).port, 17890);
+      });
+
+      group('TUN consent follows the effective tun.enable', () {
+        Map<String, dynamic> tunReply(bool enable) => {
+          ...(coreReply('minimal', 'core.json') as Map<String, dynamic>),
+          'tun': {'enable': enable, 'stack': 'System', 'device': 'utun99'},
+        };
+
+        _MockCoreHandlerInterface tunCore(bool enable) {
+          final core = fixtureCore('minimal');
+          when(
+            () => core.getConfig(any()),
+          ).thenAnswer((_) async => tunReply(enable));
+          when(
+            () => core.getProfileKeys(any()),
+          ).thenAnswer((_) async => {'proxies', 'rules', 'tun'});
+          return core;
+        }
+
+        test('a profile that turns TUN on asks for consent', () async {
+          final action = TestAuthorizingSetupAction();
+          final scoped = scopedSetup(
+            tunCore(true),
+            useProfileSettings: true,
+            action: () => action,
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+
+          expect(action.authorizeCalls, 1);
+          expect(
+            scoped.read(authorizedTunEnableProvider),
+            TunAuthorizationState.authorized,
+          );
+          expect(config['tun']['enable'], true);
+          expect(scoped.read(trayStateProvider).tunEnable, true);
+        });
+
+        test(
+          'a profile that turns TUN on fails loudly without consent',
+          () async {
+            final action = TestAuthorizingSetupAction()
+              ..authorizeResult = AuthorizeCode.error;
+            final scoped = scopedSetup(
+              tunCore(true),
+              useProfileSettings: true,
+              action: () => action,
+            );
+
+            final config = await pushedConfigOf(scoped, expectApplied: false);
+
+            expect(action.authorizeCalls, 1);
+            expect(config, isNot(contains('utun99')));
+          },
+        );
+
+        test('a profile that turns TUN off never asks, '
+            'whatever the app setting says', () async {
+          final action = TestAuthorizingSetupAction();
+          final core = tunCore(false);
+          final scoped = scopedSetup(
+            core,
+            useProfileSettings: true,
+            action: () => action,
+            patchConfig: appPatchConfig.copyWith.tun(enable: true),
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+          await action.updateConfig();
+
+          expect(action.authorizeCalls, 0);
+          expect(config['tun']['enable'], false);
+          expect(scoped.read(trayStateProvider).tunEnable, false);
+          final params =
+              (verify(() => core.updateConfig(captureAny())).captured.single
+                      as UpdateParams)
+                  .toJson();
+          expect(params['tun'], isNull);
+        });
+
+        test('with the toggle off the app setting still decides', () async {
+          final action = TestAuthorizingSetupAction();
+          final scoped = scopedSetup(
+            tunCore(false),
+            useProfileSettings: false,
+            action: () => action,
+            patchConfig: appPatchConfig.copyWith.tun(enable: true),
+          );
+
+          final config = loadYaml(await pushedConfigOf(scoped)) as YamlMap;
+
+          expect(action.authorizeCalls, 1);
+          expect(config['tun']['enable'], true);
+        });
+      });
+    });
   });
 }

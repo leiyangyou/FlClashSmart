@@ -806,6 +806,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入配置名称",
     ),
+    "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
+      "配置文件开启了 TUN，但 FlClash 未获得创建 TUN 的授权",
+    ),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "请输入有效配置URL",
     ),
@@ -1127,7 +1130,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM 模型"),
     "useProfileSettings": MessageLookupByLibrary.simpleMessage("使用配置文件设置"),
     "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "开启后，配置文件自带的设置（如 IPv6、DNS、NTP）优先于应用设置",
+      "开启后，配置文件自身写明的所有设置（包括端口、TUN、DNS）优先于应用设置；你的覆写编辑仍会生效",
     ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系统Hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("已用流量"),

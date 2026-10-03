@@ -25,6 +25,13 @@ class AuthorizedTunEnable extends _$AuthorizedTunEnable
   }
 }
 
+/// What the config the core last applied took from the profile.
+@Riverpod(keepAlive: true)
+class ProfileOwned extends _$ProfileOwned with AutoDisposeNotifierMixin {
+  @override
+  ProfileOwnedConfig build() => const ProfileOwnedConfig();
+}
+
 @Riverpod(keepAlive: true)
 class Logs extends _$Logs with AutoDisposeNotifierMixin {
   @override

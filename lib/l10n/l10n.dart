@@ -6503,11 +6503,21 @@ class AppLocalizations {
     );
   }
 
-  /// `When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app's`
+  /// `When enabled, every setting the profile states itself, including ports, TUN and DNS, takes precedence over the app's; your overwrite edits still apply`
   String get useProfileSettingsDesc {
     return Intl.message(
-      'When enabled, settings the profile defines itself, such as IPv6, DNS and NTP, take precedence over the app\'s',
+      'When enabled, every setting the profile states itself, including ports, TUN and DNS, takes precedence over the app\'s; your overwrite edits still apply',
       name: 'useProfileSettingsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The profile turns on TUN, but FlClash was not authorized to create it`
+  String get profileTunUnauthorized {
+    return Intl.message(
+      'The profile turns on TUN, but FlClash was not authorized to create it',
+      name: 'profileTunUnauthorized',
       desc: '',
       args: [],
     );

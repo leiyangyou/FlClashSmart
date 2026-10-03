@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,13 +25,15 @@ class FlClashHttpOverrides extends HttpOverrides {
     final suspend = read(suspendProvider);
     commonPrint.log('find $url proxy: $isStart');
     if (!isStart || suspend) return 'DIRECT';
-    final mixedPort = read(
-      patchClashConfigProvider.select((state) => state.mixedPort),
+    final profileOwned = read(profileOwnedProvider);
+    final mixedPort = profileOwned.mixedPort(
+      read(patchClashConfigProvider.select((state) => state.mixedPort)),
     );
-    final authentication = read(
-      networkSettingProvider.select((state) => state.authentication),
+    final credentials = profileOwned.authentication(
+      read(
+        networkSettingProvider.select((state) => state.authentication),
+      ).credentials,
     );
-    final credentials = authentication.credentials;
     final userInfo = credentials.isNotEmpty ? '${credentials.first}@' : '';
     return 'PROXY ${userInfo}localhost:$mixedPort';
   }

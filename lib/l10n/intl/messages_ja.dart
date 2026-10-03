@@ -897,6 +897,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "プロファイル名を入力してください",
     ),
+    "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
+      "プロファイルは TUN を有効にしていますが、FlClash に TUN を作成する権限が付与されていません",
+    ),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "有効なプロファイルURLを入力してください",
     ),
@@ -1262,7 +1265,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "useLightGBM": MessageLookupByLibrary.simpleMessage("LightGBM モデル"),
     "useProfileSettings": MessageLookupByLibrary.simpleMessage("プロファイルの設定を使用"),
     "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "有効にすると、IPv6、DNS、NTP などプロファイル自身が定義する設定がアプリの設定より優先されます",
+      "有効にすると、ポート、TUN、DNS などプロファイル自身が記述するすべての設定がアプリの設定より優先されます。上書きの編集は引き続き適用されます",
     ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムのHostsを使用"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),

@@ -23,7 +23,6 @@ class SetupAction extends _$SetupAction {
   final _listenerScheduler = SerialTaskScheduler();
   _RunRequest? _latestRunRequest;
   DateTime? _startTime;
-  Set<String> _profileOwnedKeys = const {};
 
   bool get _isRunning => _startTime != null && _startTime!.isBeforeNow;
 
@@ -245,7 +244,10 @@ class SetupAction extends _$SetupAction {
   Future<void> updateConfig() async {
     await globalState.safeRun(() async {
       final patchConfig = ref.read(patchClashConfigProvider);
-      final shouldContinueSetup = await requestAdmin(patchConfig.tun.enable);
+      final profileOwned = ref.read(profileOwnedProvider);
+      final shouldContinueSetup = await requestAdmin(
+        profileOwned.tunEnable(patchConfig.tun.enable),
+      );
       if (!shouldContinueSetup) {
         await _restartCoreAfterAuthorization();
         return;
@@ -255,7 +257,7 @@ class SetupAction extends _$SetupAction {
         _effectivePatchConfig(patchConfig).toUpdateParams(
           routeMode: networkSetting.routeMode,
           authentication: networkSetting.authentication.credentials,
-          profileOwnedKeys: _profileOwnedKeys,
+          profileOwnedKeys: profileOwned.keys,
         ),
       );
       if (message.isNotEmpty) throw MessageException(message);
@@ -340,7 +342,7 @@ class SetupAction extends _$SetupAction {
   }) async {
     final profileId = setupState.profileId;
     if (profileId == null) {
-      return (yaml: '', md5: '', profileOwnedKeys: const <String>{});
+      return (yaml: '', md5: '', profileOwned: const ProfileOwnedConfig());
     }
     final defaultUA = globalState.packageInfo.ua;
     final networkSetting = ref.read(
@@ -506,6 +508,16 @@ class SetupAction extends _$SetupAction {
     );
   }
 
+  /// A profile's TUN is applied as stated, so refused consent fails the setup.
+  void _ensureProfileTunAuthorized(ProfileOwnedConfig profileOwned) {
+    if (profileOwned.tunEnable(false) &&
+        !ref.read(safeModeProvider) &&
+        ref.read(authorizedTunEnableProvider) ==
+            TunAuthorizationState.unauthorized) {
+      throw MessageException(currentAppLocalizations.profileTunUnauthorized);
+    }
+  }
+
   @protected
   Future<AuthorizeCode> authorizeCore() {
     return system.authorizeCore();
@@ -576,20 +588,36 @@ class SetupAction extends _$SetupAction {
     }
     commonPrint.log('setup ===> ${profile?.realLabel}');
     final patchConfig = ref.read(patchClashConfigProvider);
-    final shouldContinueSetup = await requestAdmin(patchConfig.tun.enable);
+    Future<RealProfile?> buildProfile() => globalState.safeRun(() async {
+      final setupState = await ref.read(setupStateProvider(profile?.id).future);
+      final realProfile = await getProfile(
+        setupState: setupState,
+        patchConfig: _effectivePatchConfig(patchConfig),
+      );
+      _ensureProfileTunAuthorized(realProfile.profileOwned);
+      return realProfile;
+    }, title: 'build profile');
+    // The profile's own tun.enable decides consent, so it is built first.
+    final useProfileSettings = ref.read(useProfileSettingsProvider);
+    final authorizationBefore = ref.read(authorizedTunEnableProvider);
+    var realProfile = useProfileSettings ? await buildProfile() : null;
+    final shouldContinueSetup = await requestAdmin(
+      (realProfile?.profileOwned ?? const ProfileOwnedConfig()).tunEnable(
+        patchConfig.tun.enable,
+      ),
+    );
     if (!shouldContinueSetup) {
       return _SetupTaskResult.handoffToCoreRestart;
     }
-    final realPatchConfig = _effectivePatchConfig(patchConfig);
-    final realProfile = await globalState.safeRun(() async {
-      final setupState = await ref.read(setupStateProvider(profile?.id).future);
-      return getProfile(setupState: setupState, patchConfig: realPatchConfig);
-    }, title: 'build profile');
+    if (!useProfileSettings ||
+        ref.read(authorizedTunEnableProvider) != authorizationBefore) {
+      realProfile = await buildProfile();
+    }
     final profileFailed = realProfile == null;
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
     if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
-      _profileOwnedKeys = realProfile.profileOwnedKeys;
+      ref.read(profileOwnedProvider.notifier).value = realProfile.profileOwned;
       return _SetupTaskResult.completed;
     }
     if (system.isAndroid) {
@@ -624,7 +652,8 @@ class SetupAction extends _$SetupAction {
           rethrow;
         }
         globalState.lastConfigMd5 = yamlMd5;
-        _profileOwnedKeys = realProfile?.profileOwnedKeys ?? const {};
+        ref.read(profileOwnedProvider.notifier).value =
+            realProfile?.profileOwned ?? const ProfileOwnedConfig();
         await onUpdated?.call();
       },
       silence: true,

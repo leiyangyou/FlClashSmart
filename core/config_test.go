@@ -171,7 +171,7 @@ func TestSetGeoResourceUrlWritesOnlyAChangedLink(t *testing.T) {
 	}
 }
 
-func TestUpdateConfigAppliesAuthenticationAndClearsLoopbackExemptions(t *testing.T) {
+func TestUpdateConfigAppliesAuthenticationAndKeepsTheConfiguredExemptions(t *testing.T) {
 	withCurrentConfig(t, &config.Config{General: &config.General{}, Controller: &config.Controller{}})
 	currentConfig.General.SkipAuthPrefixes = []netip.Prefix{
 		netip.MustParsePrefix("127.0.0.1/32"),
@@ -190,8 +190,8 @@ func TestUpdateConfigAppliesAuthenticationAndClearsLoopbackExemptions(t *testing
 	if authenticator == nil || !authenticator.Verify("user", "pass") {
 		t.Error("authenticator missing or rejecting the configured credentials")
 	}
-	if inbound.SkipAuthRemoteAddress("127.0.0.1:1234") {
-		t.Error("loopback stayed exempt; local apps could bypass the credentials")
+	if !inbound.SkipAuthRemoteAddress("127.0.0.1:1234") {
+		t.Error("the exemption the applied config states was dropped")
 	}
 
 	empty := []string{}

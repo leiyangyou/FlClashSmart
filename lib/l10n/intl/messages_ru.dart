@@ -1117,6 +1117,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите название профиля",
     ),
+    "profileTunUnauthorized": MessageLookupByLibrary.simpleMessage(
+      "Профиль включает TUN, но FlClash не получил разрешения на его создание",
+    ),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите корректный URL профиля",
     ),
@@ -1570,7 +1573,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Использовать настройки профиля",
     ),
     "useProfileSettingsDesc": MessageLookupByLibrary.simpleMessage(
-      "При включении настройки, заданные в самом профиле (например, IPv6, DNS и NTP), имеют приоритет над настройками приложения",
+      "При включении все настройки, заданные в самом профиле, включая порты, TUN и DNS, имеют приоритет над настройками приложения; ваши правки перезаписи по-прежнему применяются",
     ),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системный hosts",

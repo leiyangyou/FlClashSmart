@@ -23,55 +23,50 @@ const baselineDnsOverrideKeys = {
   DnsOverrideKey.nameserver,
 };
 
-const profilePreferenceKeys = {
-  'ipv6',
-  'dns',
-  'ntp',
-  'find-process-mode',
-  'interface-name',
-  'tcp-concurrent',
-  'unified-delay',
-  'keep-alive-interval',
-  'global-ua',
-};
-
-/// Always app-written: its inbounds, mode switcher, VPN lifecycle (tun), the
-/// Resources page's geo keys, the profile's own content and the control
-/// channel. Handing any to the profile puts the core out of the app's reach.
-/// log-level feeds the log view and the core error popup, and allow-lan opens
-/// a listener the app's Allow LAN row would still show as off.
-/// geodata-loader is in neither set and is always app-written as well.
-const appPlumbingKeys = {
-  'mixed-port',
-  'port',
-  'socks-port',
-  'redir-port',
-  'tproxy-port',
-  'allow-lan',
-  'log-level',
-  'mode',
-  'tun',
-  'geox-url',
-  'lgbm-url',
-  'geo-auto-update',
-  'geo-update-interval',
-  'hosts',
+/// The user's overwrite edits, applied whatever "use my profile settings" says.
+const overwriteKeys = {
   'proxies',
   'proxy-groups',
   'rules',
   'proxy-providers',
   'rule-providers',
   'sniffer',
-  'external-controller',
-  'external-controller-tls',
-  'external-controller-unix',
-  'external-controller-pipe',
-  'external-ui',
-  'external-ui-url',
-  'authentication',
-  'skip-auth-prefixes',
   'profile',
 };
+
+/// What the generated config took from the profile, read back by the app.
+@immutable
+class ProfileOwnedConfig {
+  final Map<String, Object?> values;
+
+  const ProfileOwnedConfig([this.values = const {}]);
+
+  Set<String> get keys => values.keys.toSet();
+
+  int mixedPort(int appMixedPort) => switch (values['mixed-port']) {
+    final int port => port,
+    _ => appMixedPort,
+  };
+
+  bool tunEnable(bool appTunEnable) => switch (values['tun']) {
+    final Map tun => tun['enable'] == true,
+    _ => appTunEnable,
+  };
+
+  List<String> authentication(List<String> appAuthentication) =>
+      switch (values['authentication']) {
+        final List users => [for (final user in users) '$user'],
+        _ => appAuthentication,
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      other is ProfileOwnedConfig &&
+      const DeepCollectionEquality().equals(values, other.values);
+
+  @override
+  int get hashCode => const DeepCollectionEquality().hash(values);
+}
 
 const defaultGeoXUrl = {
   GeoResource.MMDB:
@@ -1206,21 +1201,28 @@ extension PatchClashConfigExt on PatchClashConfig {
   }) {
     T? appOwned<T>(String key, T value) =>
         profileOwnedKeys.contains(key) ? null : value;
+    final geoLinks = {
+      for (final MapEntry(:key, :value) in geoXUrl.entries)
+        if (!profileOwnedKeys.contains(
+          key == GeoResource.MODEL ? 'lgbm-url' : 'geox-url',
+        ))
+          key.configKey: value,
+    };
     return UpdateParams(
-      tun: tun.getRealTun(routeMode),
-      authentication: authentication,
-      allowLan: allowLan,
+      tun: appOwned('tun', tun.getRealTun(routeMode)),
+      authentication: appOwned('authentication', authentication),
+      allowLan: appOwned('allow-lan', allowLan),
       findProcessMode: appOwned('find-process-mode', findProcessMode),
-      mode: mode,
-      logLevel: logLevel,
+      mode: appOwned('mode', mode),
+      logLevel: appOwned('log-level', logLevel),
       ipv6: appOwned('ipv6', ipv6),
       tcpConcurrent: appOwned('tcp-concurrent', tcpConcurrent),
-      externalController: externalController,
+      externalController: appOwned('external-controller', externalController),
       unifiedDelay: appOwned('unified-delay', unifiedDelay),
-      mixedPort: mixedPort,
-      geoAutoUpdate: geoAutoUpdate,
-      geoUpdateInterval: geoUpdateInterval,
-      geoXUrl: geoXUrl.raw,
+      mixedPort: appOwned('mixed-port', mixedPort),
+      geoAutoUpdate: appOwned('geo-auto-update', geoAutoUpdate),
+      geoUpdateInterval: appOwned('geo-update-interval', geoUpdateInterval),
+      geoXUrl: appOwned('geox-url', geoLinks) ?? appOwned('lgbm-url', geoLinks),
     );
   }
 }

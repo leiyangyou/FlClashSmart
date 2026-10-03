@@ -102,6 +102,64 @@ abstract class _$AuthorizedTunEnable extends $Notifier<TunAuthorizationState> {
   }
 }
 
+/// What the config the core last applied took from the profile.
+
+@ProviderFor(ProfileOwned)
+final profileOwnedProvider = ProfileOwnedProvider._();
+
+/// What the config the core last applied took from the profile.
+final class ProfileOwnedProvider
+    extends $NotifierProvider<ProfileOwned, ProfileOwnedConfig> {
+  /// What the config the core last applied took from the profile.
+  ProfileOwnedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'profileOwnedProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$profileOwnedHash();
+
+  @$internal
+  @override
+  ProfileOwned create() => ProfileOwned();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ProfileOwnedConfig value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ProfileOwnedConfig>(value),
+    );
+  }
+}
+
+String _$profileOwnedHash() => r'92abab32b1e479714b7b15c0668b6bc9a7691603';
+
+/// What the config the core last applied took from the profile.
+
+abstract class _$ProfileOwned extends $Notifier<ProfileOwnedConfig> {
+  ProfileOwnedConfig build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<ProfileOwnedConfig, ProfileOwnedConfig>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ProfileOwnedConfig, ProfileOwnedConfig>,
+              ProfileOwnedConfig,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(Logs)
 final logsProvider = LogsProvider._();
 

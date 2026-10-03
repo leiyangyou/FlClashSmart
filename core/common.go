@@ -337,12 +337,9 @@ func applyAuthentication(cfg *config.Config, authentication []string) {
 	}
 	cfg.General.Authentication = authentication
 	cfg.Users = users
+	// skip-auth-prefixes stays what the applied config states: the app writes
+	// it empty, and a profile that states its own keeps it.
 	authStore.Default.SetAuthenticator(auth.NewAuthenticator(users))
-	if len(users) > 0 {
-		// A loopback exemption would let any local app bypass the credentials.
-		cfg.General.SkipAuthPrefixes = nil
-		inbound.SetSkipAuthPrefixes(nil)
-	}
 }
 
 func syncGeoUpdater(autoUpdate *bool, interval *int) {

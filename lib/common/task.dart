@@ -106,7 +106,11 @@ ClashConfig buildClashConfig(Map<String, dynamic> configMap) {
   return clashConfig.copyWith(proxyTypeMap: proxyTypeMap);
 }
 
-typedef RealProfile = ({String yaml, String md5, Set<String> profileOwnedKeys});
+typedef RealProfile = ({
+  String yaml,
+  String md5,
+  ProfileOwnedConfig profileOwned,
+});
 
 Future<RealProfile> makeRealProfileTask(MakeRealProfileState data) async {
   return compute<MakeRealProfileState, RealProfile>(_makeRealProfileTask, data);
@@ -114,16 +118,13 @@ Future<RealProfile> makeRealProfileTask(MakeRealProfileState data) async {
 
 Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   final rawConfig = Map.from(data.rawConfig);
-  final profileOwnedKeys = data.useProfileSettings
-      ? {
-          for (final key in profilePreferenceKeys.intersection(
-            data.profileKeys,
-          ))
-            if (rawConfig[key] != null) key,
-        }
-      : const <String>{};
-  bool appOwns(String key) => !profileOwnedKeys.contains(key);
-  void writePreference(String key, Object? value) {
+  final profileOwned = ProfileOwnedConfig({
+    if (data.useProfileSettings)
+      for (final key in data.profileKeys.difference(overwriteKeys))
+        if (rawConfig[key] != null) key: rawConfig[key],
+  });
+  bool appOwns(String key) => !profileOwned.values.containsKey(key);
+  void write(String key, Object? value) {
     if (appOwns(key)) rawConfig[key] = value;
   }
 
@@ -172,48 +173,50 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
     }
   }
 
-  rawConfig['external-controller'] = realPatchConfig.externalController.value;
-  rawConfig['external-ui'] = '';
+  write('external-controller', realPatchConfig.externalController.value);
+  write('external-ui', '');
   switch (realPatchConfig.interfaceNameMode) {
     case InterfaceNameMode.clear:
-      writePreference('interface-name', '');
+      write('interface-name', '');
     case InterfaceNameMode.follow:
       break;
     case InterfaceNameMode.custom:
-      writePreference('interface-name', realPatchConfig.interfaceName);
+      write('interface-name', realPatchConfig.interfaceName);
   }
-  rawConfig['external-ui-url'] = '';
-  writePreference('tcp-concurrent', realPatchConfig.tcpConcurrent);
-  writePreference('unified-delay', realPatchConfig.unifiedDelay);
-  writePreference('ipv6', realPatchConfig.ipv6);
-  rawConfig['log-level'] = realPatchConfig.logLevel.name;
-  rawConfig['port'] = 0;
-  rawConfig['socks-port'] = 0;
-  writePreference('keep-alive-interval', realPatchConfig.keepAliveInterval);
-  rawConfig['mixed-port'] = realPatchConfig.mixedPort;
-  rawConfig['port'] = realPatchConfig.port;
-  rawConfig['socks-port'] = realPatchConfig.socksPort;
-  rawConfig['redir-port'] = realPatchConfig.redirPort;
-  rawConfig['tproxy-port'] = realPatchConfig.tproxyPort;
-  writePreference('find-process-mode', realPatchConfig.findProcessMode.name);
-  rawConfig['allow-lan'] = realPatchConfig.allowLan;
-  // The app owns local inbound authentication; a profile-provided
-  // skip-auth-prefixes could silently exempt loopback and defeat it.
-  rawConfig['authentication'] = data.authentication;
-  rawConfig['skip-auth-prefixes'] = [];
-  rawConfig['mode'] = realPatchConfig.mode.name;
-  if (rawConfig['tun'] == null) {
-    rawConfig['tun'] = {};
+  write('external-ui-url', '');
+  write('tcp-concurrent', realPatchConfig.tcpConcurrent);
+  write('unified-delay', realPatchConfig.unifiedDelay);
+  write('ipv6', realPatchConfig.ipv6);
+  write('log-level', realPatchConfig.logLevel.name);
+  write('port', 0);
+  write('socks-port', 0);
+  write('keep-alive-interval', realPatchConfig.keepAliveInterval);
+  write('mixed-port', realPatchConfig.mixedPort);
+  write('port', realPatchConfig.port);
+  write('socks-port', realPatchConfig.socksPort);
+  write('redir-port', realPatchConfig.redirPort);
+  write('tproxy-port', realPatchConfig.tproxyPort);
+  write('find-process-mode', realPatchConfig.findProcessMode.name);
+  write('allow-lan', realPatchConfig.allowLan);
+  // A profile-provided skip-auth-prefixes could silently exempt loopback from
+  // the app's credentials, so the app clears it unless the profile owns it.
+  write('authentication', data.authentication);
+  write('skip-auth-prefixes', []);
+  write('mode', realPatchConfig.mode.name);
+  if (appOwns('tun')) {
+    if (rawConfig['tun'] == null) {
+      rawConfig['tun'] = {};
+    }
+    rawConfig['tun']['enable'] = realPatchConfig.tun.enable;
+    rawConfig['tun']['device'] = realPatchConfig.tun.device;
+    rawConfig['tun']['dns-hijack'] = realPatchConfig.tun.dnsHijack;
+    rawConfig['tun']['stack'] = realPatchConfig.tun.stack.name;
+    rawConfig['tun']['route-address'] = realPatchConfig.tun.routeAddress;
+    rawConfig['tun']['auto-route'] = realPatchConfig.tun.autoRoute;
   }
-  rawConfig['tun']['enable'] = realPatchConfig.tun.enable;
-  rawConfig['tun']['device'] = realPatchConfig.tun.device;
-  rawConfig['tun']['dns-hijack'] = realPatchConfig.tun.dnsHijack;
-  rawConfig['tun']['stack'] = realPatchConfig.tun.stack.name;
-  rawConfig['tun']['route-address'] = realPatchConfig.tun.routeAddress;
-  rawConfig['tun']['auto-route'] = realPatchConfig.tun.autoRoute;
-  rawConfig['geodata-loader'] = realPatchConfig.geodataLoader.name;
-  rawConfig['geo-auto-update'] = realPatchConfig.geoAutoUpdate;
-  rawConfig['geo-update-interval'] = realPatchConfig.geoUpdateInterval;
+  write('geodata-loader', realPatchConfig.geodataLoader.name);
+  write('geo-auto-update', realPatchConfig.geoAutoUpdate);
+  write('geo-update-interval', realPatchConfig.geoUpdateInterval);
   if (rawConfig['sniffer']?['sniff'] != null) {
     for (final value in (rawConfig['sniffer']?['sniff'] as Map).values) {
       if (value['ports'] != null && value['ports'] is List) {
@@ -244,21 +247,25 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   injectUnconfinedProviders('proxy-providers', data.injectedProxyProviders);
   injectUnconfinedProviders('rule-providers', data.injectedRuleProviders);
   rawConfig['profile']['store-selected'] = false;
-  rawConfig['geox-url'] = realPatchConfig.geoXUrl.raw;
-  rawConfig['lgbm-url'] =
-      realPatchConfig.geoXUrl[GeoResource.MODEL] ??
-      defaultGeoXUrl[GeoResource.MODEL];
-  writePreference('global-ua', realPatchConfig.globalUa ?? defaultUA);
-  if (rawConfig['hosts'] == null) {
-    rawConfig['hosts'] = {};
+  write('geox-url', realPatchConfig.geoXUrl.raw);
+  write(
+    'lgbm-url',
+    realPatchConfig.geoXUrl[GeoResource.MODEL] ??
+        defaultGeoXUrl[GeoResource.MODEL],
+  );
+  write('global-ua', realPatchConfig.globalUa ?? defaultUA);
+  if (appOwns('hosts')) {
+    if (rawConfig['hosts'] == null) {
+      rawConfig['hosts'] = {};
+    }
+    for (final host in realPatchConfig.hosts.entries) {
+      rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
+    }
   }
-  for (final host in realPatchConfig.hosts.entries) {
-    rawConfig['hosts'][host.key] = host.value.splitByMultipleSeparators;
-  }
-  var rawDns = rawConfig['dns'] is Map
-      ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
-      : <String, dynamic>{};
   if (appOwns('dns')) {
+    var rawDns = rawConfig['dns'] is Map
+        ? Map<String, dynamic>.from(rawConfig['dns'] as Map)
+        : <String, dynamic>{};
     final isEnableDns = rawDns['enable'] == true;
     const systemDns = 'system://';
     if (!isEnableDns) {
@@ -281,25 +288,8 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
         rawDns['nameserver'] = [...nameserver, systemDns];
       }
     }
-  } else {
-    // listen opens a port, like allow-lan, so Override DNS keeps it.
-    if (overrideDns) {
-      rawDns = mergeDnsOverride(
-        rawDns,
-        realPatchConfig.dns.overrideJson(
-          realPatchConfig.dnsOverrideKeys.intersection({DnsOverrideKey.listen}),
-        ),
-      );
-    }
-    final nameserver = rawDns['nameserver'];
-    if (rawDns['enable'] == true &&
-        (nameserver is! List || nameserver.isEmpty)) {
-      rawDns['nameserver'] = realPatchConfig.dns.nameserver.isNotEmpty
-          ? realPatchConfig.dns.nameserver
-          : defaultDns.nameserver;
-    }
+    rawConfig['dns'] = rawDns;
   }
-  rawConfig['dns'] = rawDns;
   if (overrideNtp && appOwns('ntp')) {
     final rawNtp = rawConfig['ntp'] is Map
         ? Map<String, dynamic>.from(rawConfig['ntp'] as Map)
@@ -310,7 +300,21 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
     };
   }
   if (data.safeMode) {
-    rawConfig['dns']['listen'] = '';
+    // Safe mode never changes the host network, whoever owns these keys.
+    rawConfig['external-controller'] = '';
+    final rawTun = rawConfig['tun'];
+    if (rawTun is Map) {
+      rawConfig['tun'] = {
+        ...Map<String, dynamic>.from(rawTun),
+        'enable': false,
+      };
+    }
+    if (rawConfig['dns'] is Map) {
+      rawConfig['dns'] = {
+        ...Map<String, dynamic>.from(rawConfig['dns'] as Map),
+        'listen': '',
+      };
+    }
     rawConfig['external-controller-tls'] = '';
     rawConfig['external-controller-unix'] = '';
     rawConfig['external-controller-pipe'] = '';
@@ -380,7 +384,7 @@ Future<RealProfile> _makeRealProfileTask(MakeRealProfileState data) async {
   }
   rawConfig['rules'] = rules;
   final yaml = await _encodeYaml(Map<String, dynamic>.from(rawConfig));
-  return (yaml: yaml, md5: yaml.toMd5(), profileOwnedKeys: profileOwnedKeys);
+  return (yaml: yaml, md5: yaml.toMd5(), profileOwned: profileOwned);
 }
 
 typedef ShakingStoreArgs = ({

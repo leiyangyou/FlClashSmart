@@ -89,7 +89,7 @@ final class TrayStateProvider
   }
 }
 
-String _$trayStateHash() => r'e3e841e2d6ae95e4eafe27996c7da33f82edcc80';
+String _$trayStateHash() => r'dee06bbdaa0b6381c9f66264fc61cc80ddb1ff01';
 
 /// Measured delays of the proxies the tray lists, by group and then proxy
 /// name. Resolved like a proxy card, so a nested group shows its selection.
@@ -395,7 +395,7 @@ final class ShouldPatchSystemDnsProvider
 }
 
 String _$shouldPatchSystemDnsHash() =>
-    r'f74bcdbae504e9528b2e960b8620d097c27f3ca9';
+    r'68194a2a507f8ca9682e64298724e5d274bf2fde';
 
 @ProviderFor(sharedState)
 final sharedStateProvider = SharedStateProvider._();
@@ -436,7 +436,7 @@ final class SharedStateProvider
   }
 }
 
-String _$sharedStateHash() => r'cd63ddf147b8c303f8b1d9d8c397d87e8a14a6dd';
+String _$sharedStateHash() => r'629b570a4ab5b439c09fa905fab64401f97d4e6a';
 
 @ProviderFor(AccessControlState)
 final accessControlStateProvider = AccessControlStateProvider._();
@@ -1852,7 +1852,7 @@ final class ProxyStateProvider
   }
 }
 
-String _$proxyStateHash() => r'76a71ab5da07dca9aeb351282c5c03ab222d0760';
+String _$proxyStateHash() => r'811dfff21aee843bee82cb4d087b3f7c22c6c4a8';
 
 @ProviderFor(proxiesActionsState)
 final proxiesActionsStateProvider = ProxiesActionsStateProvider._();

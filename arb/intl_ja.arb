@@ -785,5 +785,6 @@
   "collectData": "学習データを収集",
   "policyPriority": "ポリシー優先度",
   "useProfileSettings": "プロファイルの設定を使用",
-  "useProfileSettingsDesc": "有効にすると、IPv6、DNS、NTP などプロファイル自身が定義する設定がアプリの設定より優先されます"
+  "useProfileSettingsDesc": "有効にすると、ポート、TUN、DNS などプロファイル自身が記述するすべての設定がアプリの設定より優先されます。上書きの編集は引き続き適用されます",
+  "profileTunUnauthorized": "プロファイルは TUN を有効にしていますが、FlClash に TUN を作成する権限が付与されていません"
 }

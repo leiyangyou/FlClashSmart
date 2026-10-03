@@ -19,22 +19,22 @@ abstract class SetupParams with _$SetupParams {
 @freezed
 abstract class UpdateParams with _$UpdateParams {
   const factory UpdateParams({
-    required Tun tun,
-    @JsonKey(name: 'mixed-port') required int mixedPort,
-    @JsonKey(name: 'allow-lan') required bool allowLan,
+    required Tun? tun,
+    @JsonKey(name: 'mixed-port') required int? mixedPort,
+    @JsonKey(name: 'allow-lan') required bool? allowLan,
     @JsonKey(name: 'find-process-mode')
     required FindProcessMode? findProcessMode,
-    required Mode mode,
-    @JsonKey(name: 'log-level') required LogLevel logLevel,
+    required Mode? mode,
+    @JsonKey(name: 'log-level') required LogLevel? logLevel,
     required bool? ipv6,
     @JsonKey(name: 'tcp-concurrent') required bool? tcpConcurrent,
     @JsonKey(name: 'external-controller')
-    required ExternalControllerStatus externalController,
+    required ExternalControllerStatus? externalController,
     @JsonKey(name: 'unified-delay') required bool? unifiedDelay,
-    @Default([]) List<String> authentication,
-    @Default(false) @JsonKey(name: 'geo-auto-update') bool geoAutoUpdate,
-    @Default(24) @JsonKey(name: 'geo-update-interval') int geoUpdateInterval,
-    @Default({}) @JsonKey(name: 'geox-url') Map<String, String> geoXUrl,
+    @Default([]) List<String>? authentication,
+    @Default(false) @JsonKey(name: 'geo-auto-update') bool? geoAutoUpdate,
+    @Default(24) @JsonKey(name: 'geo-update-interval') int? geoUpdateInterval,
+    @Default({}) @JsonKey(name: 'geox-url') Map<String, String>? geoXUrl,
   }) = _UpdateParams;
 
   factory UpdateParams.fromJson(Map<String, dynamic> json) =>

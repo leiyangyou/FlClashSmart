@@ -125,68 +125,39 @@ void main() {
       test('matches the $name golden byte for byte', () async {
         final result = await _build(profile());
         expect(result.yaml, _golden(name));
-        expect(result.profileOwnedKeys, isEmpty);
+        expect(result.profileOwned.keys, isEmpty);
       });
     }
   });
 
-  test('no plumbing key can be handed to the profile', () {
-    expect(profilePreferenceKeys.intersection(appPlumbingKeys), isEmpty);
-    expect(profilePreferenceKeys, {
-      'ipv6',
-      'dns',
-      'ntp',
-      'find-process-mode',
-      'interface-name',
-      'tcp-concurrent',
-      'unified-delay',
-      'keep-alive-interval',
-      'global-ua',
-    });
-  });
-
   group('with the toggle on', () {
-    test('the profile keeps every preference it sets', () async {
-      final result = await _build(_fullProfile(), useProfileSettings: true);
+    test('the profile keeps every key it states verbatim', () async {
+      final profile = _fullProfile();
+      final result = await _build(profile, useProfileSettings: true);
       final config = loadYaml(result.yaml) as YamlMap;
+      final stated = profile.keys.toSet().difference(overwriteKeys);
 
-      expect(result.profileOwnedKeys, profilePreferenceKeys);
-      expect(config['ipv6'], true);
-      expect(config['allow-lan'], false);
-      expect(config['log-level'], 'warning');
-      expect(config['find-process-mode'], 'strict');
-      expect(config['interface-name'], 'en9');
-      expect(config['tcp-concurrent'], false);
-      expect(config['unified-delay'], false);
-      expect(config['keep-alive-interval'], 90);
-      expect(config['global-ua'], 'Profile-UA');
-      expect(config['dns'], {
-        'enable': true,
-        'listen': '0.0.0.0:1053',
-        'enhanced-mode': 'redir-host',
-        'nameserver': ['9.9.9.9'],
-      });
-      expect(config['ntp'], {
-        'enable': true,
-        'server': 'ntp.aliyun.com',
-        'write-to-system': true,
-      });
+      expect(result.profileOwned.keys, stated);
+      for (final key in stated) {
+        expect(jsonDecode(jsonEncode(config[key])), profile[key], reason: key);
+      }
     });
 
-    test('the app still owns the plumbing', () async {
+    test('the overwrite keys are still the app\'s', () async {
       final config = await _config(_fullProfile());
       final golden = loadYaml(_golden('full_profile')) as YamlMap;
 
-      for (final key in appPlumbingKeys.where(golden.containsKey)) {
+      for (final key in overwriteKeys.where(golden.containsKey)) {
         expect(config[key], golden[key], reason: key);
       }
+      expect(config['profile']['store-selected'], false);
     });
 
     test('a preference the profile leaves out is still written', () async {
       final result = await _build({}, useProfileSettings: true);
 
       expect(result.yaml, _golden('empty_profile'));
-      expect(result.profileOwnedKeys, isEmpty);
+      expect(result.profileOwned.keys, isEmpty);
 
       final config = await _config({'ipv6': true});
       expect(config['ipv6'], true);
@@ -213,7 +184,7 @@ void main() {
           profileKeys: {'proxies', 'rules'},
         );
 
-        expect(on.profileOwnedKeys, isEmpty);
+        expect(on.profileOwned.keys, isEmpty);
         expect(on.yaml, off.yaml);
       },
     );
@@ -237,6 +208,24 @@ void main() {
     }
   });
 
+  test(
+    'safe mode keeps a profile\'s tun, controller and listeners off',
+    () async {
+      final result = await _build(
+        _fullProfile(),
+        useProfileSettings: true,
+        safeMode: true,
+      );
+      final config = loadYaml(result.yaml) as YamlMap;
+
+      expect(config['tun']['enable'], false);
+      expect(config['tun']['device'], 'utun99');
+      expect(config['external-controller'], '');
+      expect(config['dns']['listen'], '');
+      expect(config['ntp']['write-to-system'], false);
+    },
+  );
+
   group('the dns block', () {
     for (final (name, block) in [
       ('an empty nameserver list', {'enable': true, 'nameserver': []}),
@@ -248,7 +237,8 @@ void main() {
         (false, true),
       ]) {
         test('an enabled dns block with $name resolves through the app\'s '
-            'nameservers, toggle ${useProfileSettings ? 'on' : 'off'}, '
+            'nameservers only with the toggle off, '
+            'toggle ${useProfileSettings ? 'on' : 'off'}, '
             'Override DNS ${overrideDns ? 'on' : 'off'}', () async {
           final config = await _config(
             {'dns': block},
@@ -258,13 +248,16 @@ void main() {
           );
 
           expect(config['dns']['enable'], true);
-          expect(config['dns']['nameserver'], ['1.1.1.1']);
+          expect(
+            config['dns']['nameserver'],
+            useProfileSettings ? block['nameserver'] : ['1.1.1.1'],
+          );
         });
       }
     }
 
     for (final overrideDns in [false, true]) {
-      test('a profile dns block listens where the app would with Override DNS '
+      test('a profile dns block keeps its own listen with Override DNS '
           '${overrideDns ? 'on' : 'off'}', () async {
         final profile = {
           'dns': {
@@ -280,11 +273,11 @@ void main() {
         );
         final on = await _config(profile, overrideDns: overrideDns);
 
-        expect(on['dns']['listen'], off['dns']['listen']);
         expect(
-          on['dns']['listen'],
+          off['dns']['listen'],
           overrideDns ? '0.0.0.0:1053' : '0.0.0.0:53',
         );
+        expect(on['dns']['listen'], '0.0.0.0:53');
         expect(on['dns']['nameserver'], ['9.9.9.9']);
       });
     }
@@ -302,7 +295,7 @@ void main() {
         final off = await build(false);
         final onDns = (loadYaml(on.yaml) as YamlMap)['dns'];
 
-        expect(on.profileOwnedKeys, {'ipv6'});
+        expect(on.profileOwned.keys, {'ipv6'});
         expect(onDns, (loadYaml(off.yaml) as YamlMap)['dns']);
         expect(onDns['nameserver'], ['1.1.1.1', 'system://']);
         expect(onDns['listen'], safeMode ? '' : '0.0.0.0:1053');
@@ -325,19 +318,28 @@ void main() {
       expect('$encoded\n', _golden('update_params', extension: 'json'));
     });
 
-    test('leaves only the profile-owned keys unchanged', () {
+    test('nulls each key the profile states and only that key', () {
       final app = payload({});
-      final owned = payload(profilePreferenceKeys);
 
-      for (final key in app.keys) {
-        final leftUnchanged = {
-          'ipv6',
-          'find-process-mode',
-          'tcp-concurrent',
-          'unified-delay',
-        }.contains(key);
-        expect(owned[key], leftUnchanged ? isNull : app[key], reason: key);
+      for (final key in app.keys.where((key) => key != 'geox-url')) {
+        final owned = payload({key});
+        expect(app[key], isNotNull, reason: key);
+        for (final other in app.keys) {
+          expect(
+            owned[other],
+            other == key ? isNull : app[other],
+            reason: '$key stated, $other',
+          );
+        }
       }
+    });
+
+    test('geox-url and lgbm-url each withhold only their own links', () {
+      final app = payload({})['geox-url'] as Map<String, dynamic>;
+
+      expect(payload({'geox-url'})['geox-url'], {'model': app['model']});
+      expect(payload({'lgbm-url'})['geox-url'], Map.of(app)..remove('model'));
+      expect(payload({'geox-url', 'lgbm-url'})['geox-url'], isNull);
     });
   });
 }

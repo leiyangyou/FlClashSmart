@@ -1055,6 +1055,14 @@ func TestHandleGetProfileKeysReportsOnlyTheKeysTheProfileSets(t *testing.T) {
 	for name, want := range map[string][]string{
 		"minimal":      {"proxies", "rules"},
 		"ipv6_dns_ntp": {"dns", "ipv6", "ntp", "proxies", "rules"},
+		"all_keys": {
+			"allow-lan", "authentication", "dns", "external-controller", "external-ui",
+			"external-ui-url", "find-process-mode", "geo-auto-update", "geo-update-interval",
+			"geodata-loader", "geox-url", "global-ua", "hosts", "interface-name", "ipv6",
+			"keep-alive-interval", "lgbm-url", "log-level", "mixed-port", "mode", "ntp", "port",
+			"profile", "proxies", "proxy-groups", "redir-port", "rules", "skip-auth-prefixes",
+			"sniffer", "socks-port", "tcp-concurrent", "tproxy-port", "tun", "unified-delay",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			profilePath := filepath.Join(fixtures, name+".yaml")

@@ -785,5 +785,6 @@
   "collectData": "采集训练数据",
   "policyPriority": "策略优先级",
   "useProfileSettings": "使用配置文件设置",
-  "useProfileSettingsDesc": "开启后，配置文件自带的设置（如 IPv6、DNS、NTP）优先于应用设置"
+  "useProfileSettingsDesc": "开启后，配置文件自身写明的所有设置（包括端口、TUN、DNS）优先于应用设置；你的覆写编辑仍会生效",
+  "profileTunUnauthorized": "配置文件开启了 TUN，但 FlClash 未获得创建 TUN 的授权"
 }

@@ -1,0 +1,63 @@
+mixed-port: 17890
+port: 17891
+socks-port: 17892
+redir-port: 17893
+tproxy-port: 17894
+allow-lan: true
+mode: global
+log-level: debug
+ipv6: true
+find-process-mode: always
+interface-name: en9
+tcp-concurrent: false
+unified-delay: false
+keep-alive-interval: 90
+global-ua: Profile-UA
+geodata-loader: standard
+geo-auto-update: true
+geo-update-interval: 6
+geox-url:
+  geoip: https://profile.example/geoip.dat
+lgbm-url: https://profile.example/model.bin
+external-controller: 127.0.0.1:19090
+external-ui: ui
+external-ui-url: https://profile.example/ui.zip
+authentication:
+  - profile:secret
+skip-auth-prefixes:
+  - 127.0.0.1/32
+hosts:
+  profile.local: 10.0.0.1
+tun:
+  enable: true
+  stack: system
+  device: utun99
+  auto-route: false
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  enhanced-mode: redir-host
+  nameserver:
+    - 9.9.9.9
+ntp:
+  enable: true
+  server: ntp.aliyun.com
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080]
+profile:
+  store-selected: true
+proxies:
+  - name: profile-proxy
+    type: socks5
+    server: 10.0.0.9
+    port: 1080
+proxy-groups:
+  - name: ProfileGroup
+    type: select
+    proxies: [profile-proxy]
+rules:
+  - DOMAIN,profile.example,ProfileGroup
+  - MATCH,DIRECT

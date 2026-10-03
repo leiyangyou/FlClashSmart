@@ -40,7 +40,14 @@ abstract final class TextInputLimits {
 
   static List<TextInputFormatter> decimalOnly(int maxLength) {
     return [
-      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+      // A whole-string filter, so a second separator can never reach the parser
+      // and a half-typed "0.25." cannot silently clear a saved value.
+      TextInputFormatter.withFunction((oldValue, newValue) {
+        final text = newValue.text;
+        return text.isEmpty || RegExp(r'^\d*\.?\d*$').hasMatch(text)
+            ? newValue
+            : oldValue;
+      }),
       LengthLimitingTextInputFormatter(maxLength),
     ];
   }

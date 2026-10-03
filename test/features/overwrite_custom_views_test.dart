@@ -221,6 +221,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<Switch>(modelSwitch).value, isTrue);
 
+    String fieldText(Finder finder) => tester
+        .widget<EditableText>(
+          find.descendant(of: finder, matching: find.byType(EditableText)),
+        )
+        .controller
+        .text;
+
+    final rateField = find.descendant(
+      of: find.ancestor(
+        of: find.text(l10n.sampleRate),
+        matching: find.byType(OverwriteFormRow),
+      ),
+      matching: find.byType(TextFormField),
+    );
+    await tester.enterText(rateField, '0.25');
+    await tester.pump();
+    expect(fieldText(rateField), '0.25');
+
+    // A second separator is rejected instead of being parsed away to null.
+    await tester.enterText(rateField, '0.25.');
+    await tester.pump();
+    expect(fieldText(rateField), '0.25');
+
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

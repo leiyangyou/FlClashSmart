@@ -188,6 +188,17 @@ extension ProxyGroupExt on ProxyGroup {
       if (icon?.isNotEmpty == true) 'icon': icon,
       if (type == GroupType.URLTest && tolerance != null)
         'tolerance': tolerance,
+      if (type == GroupType.Smart && tolerance != null) 'tolerance': tolerance,
+      if (type == GroupType.Smart && useLightGBM != null)
+        'uselightgbm': useLightGBM,
+      if (type == GroupType.Smart && collectData != null)
+        'collectdata': collectData,
+      if (type == GroupType.Smart && sampleRate != null)
+        'sample-rate': sampleRate,
+      if (type == GroupType.Smart && preferASN != null)
+        'prefer-asn': preferASN,
+      if (type == GroupType.Smart && policyPriority?.isNotEmpty == true)
+        'policy-priority': policyPriority,
       if (type == GroupType.LoadBalance && strategy != null)
         'strategy': strategy!.value,
     };

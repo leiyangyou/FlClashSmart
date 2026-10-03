@@ -656,10 +656,15 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
         textAlign: TextAlign.end,
         initialValue: sampleRate?.toString(),
         onChanged: (value) {
+          final parsed = double.tryParse(value);
+          // A half-typed value must not clear a saved rate.
+          if (value.isNotEmpty && parsed == null) {
+            return;
+          }
           ref
               .read(proxyGroupProvider.notifier)
               .update(
-                (state) => state.copyWith(sampleRate: double.tryParse(value)),
+                (state) => state.copyWith(sampleRate: parsed),
               );
         },
         decoration: InputDecoration.collapsed(

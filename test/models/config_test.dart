@@ -676,6 +676,57 @@ void main() {
       expect(definition.containsKey('max-failed-times'), isFalse);
     });
 
+    const smartGroup = ProxyGroup(
+      profileId: 7,
+      id: 100,
+      name: 'Smart',
+      type: GroupType.Smart,
+      proxies: ['A'],
+      url: 'https://cp.cloudflare.com/generate_204',
+      tolerance: 50,
+      useLightGBM: true,
+      collectData: false,
+      sampleRate: 0.25,
+      preferASN: true,
+      policyPriority: 'ef:1.5;nx:0.5',
+    );
+
+    test('emits the smart options for a smart group', () {
+      final definition = smartGroup.definition;
+
+      expect(definition['type'], 'smart');
+      expect(definition['uselightgbm'], true);
+      expect(definition['collectdata'], false);
+      expect(definition['sample-rate'], 0.25);
+      expect(definition['prefer-asn'], true);
+      expect(definition['policy-priority'], 'ef:1.5;nx:0.5');
+      expect(definition['tolerance'], 50);
+    });
+
+    test('a non-smart group never emits the smart options', () {
+      final definition = group
+          .copyWith(
+            useLightGBM: true,
+            collectData: true,
+            sampleRate: 0.5,
+            preferASN: true,
+            policyPriority: 'ef:2',
+          )
+          .definition;
+
+      expect(definition.containsKey('uselightgbm'), isFalse);
+      expect(definition.containsKey('collectdata'), isFalse);
+      expect(definition.containsKey('sample-rate'), isFalse);
+      expect(definition.containsKey('prefer-asn'), isFalse);
+      expect(definition.containsKey('policy-priority'), isFalse);
+    });
+
+    test('an empty policy priority is dropped like an empty filter', () {
+      final definition = smartGroup.copyWith(policyPriority: '').definition;
+
+      expect(definition.containsKey('policy-priority'), isFalse);
+    });
+
     test('scopes tolerance and strategy to the types that read them', () {
       expect(group.definition['tolerance'], 50);
       expect(group.definition.containsKey('strategy'), isFalse);
